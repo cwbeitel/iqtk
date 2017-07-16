@@ -29,10 +29,10 @@ def cli():
     allow_extra_args=True
 ))
 #@click.option('--config', default=None, required=True)
-def manager():
+def service():
     """Run the primary iqtk manager daemon."""
-    from inquiry.framework.manager import Manager
-    Manager('dev-topic', 'dev-subscription').run()
+    from inquiry.framework.service import Service
+    Service('dev-topic', 'dev-subscription').run()
 
 @cli.command(context_settings=dict(
     ignore_unknown_options=True,

@@ -1,0 +1,34 @@
+include *.md
+include *.yml
+include BUILD
+include ISSUE_TEMPLATE
+include LICENSE
+include WORKSPACE
+recursive-include inquiry *.amb
+recursive-include inquiry *.ann
+recursive-include inquiry *.bazelrc
+recursive-include inquiry *.body
+recursive-include inquiry *.bwt
+recursive-include inquiry *.bzl
+recursive-include inquiry *.fa
+recursive-include inquiry *.firebaserc
+recursive-include inquiry *.fq
+recursive-include inquiry *.gtf
+recursive-include inquiry *.html
+recursive-include inquiry *.in
+recursive-include inquiry *.ipynb
+recursive-include inquiry *.js
+recursive-include inquiry *.json
+recursive-include inquiry *.lock
+recursive-include inquiry *.md
+recursive-include inquiry *.pac
+recursive-include inquiry *.png
+recursive-include inquiry *.proto
+recursive-include inquiry *.pug
+recursive-include inquiry *.py
+recursive-include inquiry *.sa
+recursive-include inquiry *.schema
+recursive-include inquiry *.sh
+recursive-include inquiry *.txt
+recursive-include inquiry *.vcf
+recursive-include tools *.sh

@@ -15,7 +15,7 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Dockerfile to be used in docker build
-DOCKERFILE_PATH="${SCRIPT_DIR}/Dockerfile.manager"
+DOCKERFILE_PATH="${SCRIPT_DIR}/Dockerfile.deploy"
 DOCKER_CONTEXT_PATH="${SCRIPT_DIR}"
 
 COMMAND=("$@")
@@ -30,7 +30,7 @@ function upsearch () {
 # Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
-BUILD_TAG="${BUILD_TAG:-ci}"
+BUILD_TAG="${BUILD_TAG:-base}"
 
 # Determine the docker image name
 DOCKER_IMG_NAME="${BUILD_TAG}"

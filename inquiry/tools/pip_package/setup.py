@@ -20,8 +20,9 @@ import os
 import sys
 
 from setuptools import find_packages, setup
+from setuptools.command.test import test as TestCommand
 
-_VERSION = '0.0.1'
+_VERSION = '0.0.3'
 
 
 REQUIRED_PACKAGES = [
@@ -29,16 +30,13 @@ REQUIRED_PACKAGES = [
     'google-cloud-bigquery==0.22.1',
     'google-api-python-client==1.6.2',
     'click==6.7',
-    #'google-cloud-logging==0.23.0',
     'docker==2.2.1',
     'colorama==0.3.9',
     'coloredlogs==6.1',
     'google-apitools==0.5.10',
     'google-auth==1.0.0',
     'google-auth-httplib2==0.0.2',
-    # 'gapic-google-cloud-logging-v2==0.91.3',
     'google-cloud-core==0.22.1',
-    # 'google-cloud-logging==1.0.0',
     'google-gax==0.15.8',
     'googleapis-common-protos==1.5.2',
     'grpcio==1.2.1',
@@ -57,10 +55,10 @@ REQUIRED_PACKAGES = [
     'uritemplate==3.0.0',
 ]
 
-project_name = 'inquiry'
+project_name = 'iqtk'
 
 CONSOLE_SCRIPTS = [
-    'iq = inquiry.util.cli:main'
+    'iqtk = inquiry.framework.cli:main'
     ]
 
 TEST_PACKAGES = [
@@ -69,12 +67,11 @@ TEST_PACKAGES = [
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-
 setup(
     name=project_name,
     version=_VERSION,
-    description='A bioinformatics toolkit.',
-    long_description='A toolkit. For *bioinformatics*. Oh yeah.',
+    description='Reproducible biological data science.',
+    long_description='The Inquiry Toolkit is a full stack of open-source data infrastructure components for reproducible scientific research.',
     url='http://iqtk.io',
     author='University of California',
     author_email='inquiryproject@lists.lbl.gov',

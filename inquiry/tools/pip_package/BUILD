@@ -20,8 +20,7 @@ sh_binary(
             "MANIFEST.in",
             "README",
             "setup.py",
-            "//inquiry:inquiry_py",
-            "//inquiry/framework",
+            "//inquiry:inquiry_py"
         ],
     }),
 )

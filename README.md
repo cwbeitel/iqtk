@@ -13,13 +13,19 @@ tracking requests and bugs.**
 
 ## Installation
 
-The Inquiry framework and toolkit can be installed with combined setup script:
+A docker container containing the inquiry toolkit can be obtained using the following script:
 
 ```bash
 curl scripts.iqtk.io/setup | bash
 ```
 
-Or using pip, as follows:
+Or if Docker is already installed on the host machine via the following:
+
+```bash
+docker pull gcr.io/jbei-cloud/iqtk:latest
+```
+
+The toolkit can also be pip installed directly but if using this approach we suggest doing so within a virtual environment like `conda` or `virtualenv`.
 
 ```bash
 pip install iqtk
@@ -147,7 +153,7 @@ message DiffExpressionLevel {
   string id = 1;
   string geneid = 2;
   string gene = 3;
-  string locus = 4;
+  string locus = 4;``
   string sample1 = 5;
   string sample2 = 6;
   string status = 7;
@@ -192,7 +198,7 @@ The following diagram provides a non-technical summary of the cloud architecture
 
 ### Acknowledgements
 
-We would like to acknowledge the value of input received from members of the Google Genomics team (summarized this [post](https://opensource.googleblog.com/2016/11/docker-dataflow-happier-workflows.html)). See also [DockerFlow](https://github.com/googlegenomics/dockerflow) for a Java implementation of Airflow-style container workflow orchestration with Beam.
+We would like to acknowledge the value of input received from members of the Google Genomics team (summarized this [post](https://opensource.googleblog.com/2016/11/docker-dataflow-happier-workflows.html)). See also [DockerFlow](https://github.com/googlegenomics/dockerflow) for a Java implementation of Airflow-style container workflow orchestration with Beam. We also acknowledge the TensorFlow project, see their [LICENSE](https://github.com/tensorflow/tensorflow/blob/master/LICENSE), for various build-related tooling from their project we built upon.
 
 ### Contact
 

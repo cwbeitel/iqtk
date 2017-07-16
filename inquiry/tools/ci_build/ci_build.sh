@@ -31,12 +31,11 @@ function upsearch () {
 # Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
-BUILD_TAG="${BUILD_TAG:-ci}"
-# Hack
-#BUILD_TAG=iqtk-ci
+
+BASE_BUILD_TAG="${BUILD_TAG:-base}"
 
 # Determine the docker image name
-DOCKER_IMG_NAME="${BUILD_TAG}"
+DOCKER_IMG_NAME="${BASE_BUILD_TAG}"
 
 # Under Jenkins matrix build, the build tag may contain characters such as
 # commas (,) and equal signs (=), which are not valid inside docker image names.
@@ -49,7 +48,7 @@ export DOCKER_IMG_NAME=${DOCKER_IMG_NAME}
 # Print arguments.
 echo "WORKSPACE: ${WORKSPACE}"
 echo "COMMAND: ${COMMAND[@]}"
-echo "BUILD_TAG: ${BUILD_TAG}"
+echo "BASE_BUILD_TAG: ${BASE_BUILD_TAG}"
 echo "  (docker container name will be ${DOCKER_IMG_NAME})"
 echo ""
 

@@ -31,7 +31,7 @@ from inquiry.toolkit.simple.workflow import SimpleWorkflow
 #             }
 
 
-class Manager(object):
+class Service(object):
     def __init__(self, topic_name, subscription_name):
         pubsub_client = pubsub.Client()
         self.topic = pubsub_client.topic(topic_name)
@@ -68,4 +68,4 @@ class Manager(object):
 
 
 if __name__ == "__main__":
-    Manager('dev-topic', 'dev-subscription').run()
+    Service('dev-topic', 'dev-subscription').run()

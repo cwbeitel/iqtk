@@ -16,6 +16,11 @@ function main() {
     exit 1
   fi
 
+  # New-style runfiles structure (--nolegacy_external_runfiles).
+  cp -R \
+    bazel-bin/inquiry/tools/pip_package/build_pip_package.runfiles/inquiry/inquiry \
+    "${TMPDIR}"
+
   cp inquiry/tools/pip_package/MANIFEST.in ${TMPDIR}
   cp inquiry/tools/pip_package/README ${TMPDIR}
   cp inquiry/tools/pip_package/setup.py ${TMPDIR}
@@ -28,7 +33,8 @@ function main() {
   pushd ${TMPDIR}
   rm -f MANIFEST
   echo $(date) : "=== Building wheel"
-  "${PYTHON_BIN_PATH:-python}" setup.py bdist_wheel ${GPU_FLAG} >/dev/null
+  #"${PYTHON_BIN_PATH:-python}" setup.py bdist_wheel ${GPU_FLAG} >/dev/null
+  "${PYTHON_BIN_PATH:-python}" setup.py sdist bdist_wheel ${GPU_FLAG} >/dev/null
   mkdir -p ${DEST}
   cp dist/* ${DEST}
   popd
