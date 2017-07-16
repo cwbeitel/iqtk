@@ -1,0 +1,37 @@
+machine:
+  environment:
+    CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+    BUILD_TAG: iqtk-ci
+  services:
+    - docker
+
+dependencies:
+  cache_directories:
+    - "/home/ubuntu/.cache/bazel"
+    - "~/docker"
+    - ~/google-cloud-sdk
+
+  override:
+    - docker info
+    - if [[ -e ~/docker/build-cache.tar ]]; then docker load --input ~/docker/build-cache.tar; fi
+    # - inquiry/tools/ci_build/ci_build.sh ls /bazel
+    - mkdir -p ~/docker; docker save ${BUILD_TAG} > ~/docker/build-cache.tar
+
+test:
+  override:
+    - inquiry/tools/ci_build/ensure_gcloud_installed.sh
+    # - inquiry/tools/ci_build/ci_build.sh /root/bin/bazel test //inquiry/framework/... --test_output=errors
+    # - inquiry/tools/ci_build/ci_build.sh /root/bin/bazel test //inquiry/toolkit/simple/... --test_output=errors
+    - inquiry/tools/ci_build/ci_build.sh inquiry/tools/ci_build/builds/pip.sh
+
+deployment:
+  prod:
+    branch: master
+    commands:
+      - docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS quay.io
+      - docker tag ${BUILD_TAG} quay.io/iqtk/${BUILD_TAG}
+      - docker push quay.io/iqtk/${BUILD_TAG}
+      # - inquiry/tools/ci_build/auth-gcloud.sh
+      # Having trouble creating a service account on jbei-cloud.
+      #- docker tag ${BUILD_TAG} gcr.io/jbei-cloud/${BUILD_TAG}
+      #- gcloud docker push gcr.io/jbei-cloud/${BUILD_TAG}

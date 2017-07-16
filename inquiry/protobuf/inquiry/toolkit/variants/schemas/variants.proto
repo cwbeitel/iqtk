@@ -1,0 +1,67 @@
+syntax = "proto3";
+package inquiry.toolkit.genotyping.schemas;
+import "bq_table_name.proto";
+import "inquiry/common.proto";
+
+// Forked from https://github.com/ga4gh/ga4gh-schemas,
+// see https://github.com/ga4gh/ga4gh-schemas/blob/master/LICENSE
+
+message VariantSetMetadata {
+  string key = 1;
+  string value = 2;
+  string id = 3;
+  string type = 4;
+  string number = 5;
+  string description = 6;
+  Attributes attributes = 8;
+}
+
+message VariantSet {
+  string id = 1;
+  string name = 2;
+  string dataset_id = 3;
+  string reference_set_id = 4;
+  repeated VariantSetMetadata metadata = 5;
+}
+
+message CallSet {
+  string id = 1;
+  string name = 2;
+  string biosample_id = 3;
+  repeated string variant_set_ids = 4;
+  int64 created = 5;
+  int64 updated = 6;
+  Attributes attributes = 8;
+}
+
+message Call {
+  string call_set_name = 1;
+  string call_set_id = 2;
+  ListValue genotype = 7;
+  string phaseset = 4;
+  repeated double genotype_likelihood = 5;
+  Attributes attributes = 8;
+}
+
+message Variant {
+  option (gen_bq_schema.table_name) = "variant";
+  string id = 1;
+  string variant_set_id = 2;
+  repeated string names = 3;
+  int64 created = 4;
+  int64 updated = 5;
+  string reference_name = 6;
+  int64 start = 7;
+  int64 end = 8;
+  string reference_bases = 9;
+  repeated string alternate_bases = 10;
+  Attributes attributes = 13;
+  repeated Call calls = 12;
+  string variant_type = 17;
+  int64 svlen = 18;
+  repeated sint32 cipos = 19;
+  repeated sint32 ciend = 20;
+  bool filters_applied = 14;
+  bool filters_passed = 15;
+  repeated string filters_failed = 16;
+}

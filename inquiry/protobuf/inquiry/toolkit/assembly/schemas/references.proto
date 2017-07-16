@@ -1,0 +1,32 @@
+syntax = "proto3";
+package inquiry.toolkit.assembly.schemas;
+import "bq_table_name.proto";
+
+// Forked from https://github.com/ga4gh/ga4gh-schemas,
+// see https://github.com/ga4gh/ga4gh-schemas/blob/master/LICENSE
+
+message Reference {
+  string id = 1;
+  int64 length = 2;
+  string md5checksum = 3;
+  string name = 4;
+  string source_uri = 5;
+  repeated string source_accessions = 6;
+  bool is_derived = 7;
+  float source_divergence = 8;
+  OntologyTerm species = 10;
+  Attributes attributes = 11;
+}
+
+message ReferenceSet {
+  string id = 1;
+  string name = 2;
+  string md5checksum = 3;
+  OntologyTerm species = 10;
+  string description = 5;
+  string assembly_id = 6;
+  string source_uri = 7;
+  repeated string source_accessions = 8;
+  bool is_derived = 9;
+  Attributes attributes = 11;
+}

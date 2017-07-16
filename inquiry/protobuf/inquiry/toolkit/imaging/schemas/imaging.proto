@@ -1,0 +1,7 @@
+syntax = "proto3";
+package inquiry.toolkit.imaging.schemas;
+import "bq_table_name.proto";
+
+message ImageSet {
+  option (gen_bq_schema.table_name) = "image_set";
+}

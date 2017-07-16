@@ -1,0 +1,35 @@
+syntax = "proto3";
+package inquiry;
+
+// Forked from https://github.com/ga4gh/ga4gh-schemas,
+// see https://github.com/ga4gh/ga4gh-schemas/blob/master/LICENSE
+
+message Individual {
+  string id = 1;
+  string dataset_id = 2;
+  string name = 3;
+  string description = 4;
+  string created = 5;
+  string updated = 6;
+  OntologyTerm species = 7;
+  OntologyTerm sex = 8;
+  Attributes attributes = 10;
+}
+
+message Biosample {
+  string id = 1;
+  string dataset_id = 2;
+  string name = 3;
+  string description = 4;
+  OntologyTerm disease = 5;
+  string created = 6;
+  string updated = 7;
+  string individual_id = 8;
+  Attributes attributes = 10;
+  Age individual_age_at_collection = 11;
+}
+
+message Age {
+  string age = 1;
+  OntologyTerm age_class = 2;
+}

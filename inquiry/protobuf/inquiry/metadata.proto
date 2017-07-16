@@ -1,0 +1,13 @@
+syntax = "proto3";
+package inquiry;
+import "inquiry/common.proto";
+
+// Forked from https://github.com/ga4gh/ga4gh-schemas,
+// see https://github.com/ga4gh/ga4gh-schemas/blob/master/LICENSE
+
+message Dataset {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  Attributes attributes = 5;
+}

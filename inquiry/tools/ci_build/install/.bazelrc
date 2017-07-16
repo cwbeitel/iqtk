@@ -1,0 +1,4 @@
+build --package_path=%workspace%:/home/ubuntu/.bazel/base_workspace --define='buildenv=circleci' --spawn_strategy=standalone --genrule_strategy=standalone --nodistinct_host_configuration --define='buildenv=circleci' --spawn_strategy=standalone --genrule_strategy=standalone --test_output=errors --nodistinct_host_configuration --explain=/tmp/circle-artifacts.epERZLw/bazel-test.log --verbose_explanations
+fetch --package_path %workspace%:/home/ubuntu/.bazel/base_workspace
+query --package_path %workspace%:/home/ubuntu/.bazel/base_workspace
+startup --batch

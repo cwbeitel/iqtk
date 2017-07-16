@@ -1,0 +1,37 @@
+syntax = "proto3";
+package inquiry.toolkit.ms.schemas;
+import "bq_table_name.proto";
+import "inquiry/common.proto";
+
+
+message MSQuantification {
+
+  option (gen_bq_schema.table_name) = "ms_quantification";
+
+  string ID = 1;
+
+  string Pathway = 2;
+
+  string Sub-pathway = 3;
+
+  string KEGG = 4;
+
+  int32 Pubchem = 4;
+
+  Platform = 5;
+
+  HMDB = 6;
+
+  Biochemical name = 6;
+
+  Mass = 7;
+
+  RI = 8;
+
+  CAS Number = 9;
+
+  Confidence Interval = 10;
+
+  Attributes attributes = 11;
+
+}
