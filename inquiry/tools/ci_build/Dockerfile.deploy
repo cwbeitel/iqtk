@@ -1,6 +1,0 @@
-FROM iqtk-base:latest
-
-# Building container relative to workspace root, i.e. dir with WORKSPACE.
-# making paths have form inquiry/tools/...
-
-COPY pip_test/whl/*.whl /install/

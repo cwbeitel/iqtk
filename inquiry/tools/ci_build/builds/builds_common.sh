@@ -97,3 +97,9 @@ run_in_directory() {
 
   return 0
 }
+
+upsearch () {
+  test / == "$PWD" && return || \
+      test -e "$1" && echo "$PWD" && return || \
+      cd .. && upsearch "$1"
+}

@@ -12,45 +12,54 @@
 # limitations under the License.
 # ==============================================================================
 
+# requires BUILD_TAG from environment, e.g.
+# BUILD_TAG=iqtk:0.0.1; sh inquiry/tools/ci_build/builds/build_release_container.sh
+# requires image iqtk-base exists
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/builds_common.sh"
 
-# Dockerfile to be used in docker build
-DOCKERFILE_PATH="${SCRIPT_DIR}/Dockerfile.deploy"
-DOCKER_CONTEXT_PATH="${SCRIPT_DIR}"
+if [[ -z "${BUILD_TAG}" ]]; then
+  die "The variable BUILD_TAG must be defined before building release container."
+fi
 
-COMMAND=("$@")
+if [[ "$(docker images -q iqtk-base:latest 2> /dev/null)" == "" ]]; then
+  die "The base iqtk container must have been built before building release."
+fi
 
-# Helper function to traverse directories up until given file is found.
-function upsearch () {
-  test / == "$PWD" && return || \
-      test -e "$1" && echo "$PWD" && return || \
-      cd .. && upsearch "$1"
-}
-
-# Set up WORKSPACE and BUILD_TAG. Jenkins will set them for you or we pick
-# reasonable defaults if you run it outside of Jenkins.
+DOCKERFILE_PATH="${SCRIPT_DIR}/../Dockerfile.iqtk-service"
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
-BUILD_TAG="${BUILD_TAG:-base}"
 
-# Determine the docker image name
 DOCKER_IMG_NAME="${BUILD_TAG}"
-
-# Under Jenkins matrix build, the build tag may contain characters such as
-# commas (,) and equal signs (=), which are not valid inside docker image names.
 DOCKER_IMG_NAME=$(echo "${DOCKER_IMG_NAME}" | sed -e 's/=/_/g' -e 's/,/-/g')
-
-# Convert to all lower-case, as per requirement of Docker image names
 DOCKER_IMG_NAME=$(echo "${DOCKER_IMG_NAME}" | tr '[:upper:]' '[:lower:]')
 export DOCKER_IMG_NAME=${DOCKER_IMG_NAME}
 
 # Print arguments.
 echo "WORKSPACE: ${WORKSPACE}"
-echo "COMMAND: ${COMMAND[@]}"
 echo "BUILD_TAG: ${BUILD_TAG}"
 echo "  (docker container name will be ${DOCKER_IMG_NAME})"
 echo ""
 
+# Copy Dockerfile and whl to tempdir for build...
+TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)
+
+echo $(date) : "=== Building release container in tmpdir: ${TMPDIR}"
+
+if [ ! -d bazel-bin/inquiry ]; then
+  echo "Could not find bazel-bin.  Did you run from the root of the build tree?"
+  exit 1
+fi
+
+cp ${DOCKERFILE_PATH} ${TMPDIR}/Dockerfile
+cp pip_test/whl/* ${TMPDIR}
+
+pushd ${TMPDIR}
+echo $(date) : "=== Building release container"
 # Build the docker container.
 echo "Building container (${DOCKER_IMG_NAME})..."
 docker build -t ${DOCKER_IMG_NAME} \
-    -f "${DOCKERFILE_PATH}" "${WORKSPACE}"
+    -f "${TMPDIR}/Dockerfile" "${TMPDIR}"
+popd
+rm -rf ${TMPDIR}
+echo $(date) : "=== Output wheel file is in: ${DEST}"

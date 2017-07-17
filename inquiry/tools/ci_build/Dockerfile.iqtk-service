@@ -1,0 +1,14 @@
+FROM iqtk-base:latest
+
+# Building container relative to workspace root, i.e. dir with WORKSPACE.
+# making paths have form inquiry/tools/...
+
+COPY * /install/
+RUN ls /install
+
+RUN virtualenv "/install/venv" && chmod +x /install/venv/bin/activate
+RUN /install/venv/bin/activate
+
+RUN pip2 install /install/iqtk-*.tar.gz
+
+RUN iqtk

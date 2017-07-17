@@ -37,6 +37,7 @@ function main() {
   "${PYTHON_BIN_PATH:-python}" setup.py sdist bdist_wheel ${GPU_FLAG} >/dev/null
   mkdir -p ${DEST}
   cp dist/* ${DEST}
+  ls ${DEST}
   popd
   rm -rf ${TMPDIR}
   echo $(date) : "=== Output wheel file is in: ${DEST}"

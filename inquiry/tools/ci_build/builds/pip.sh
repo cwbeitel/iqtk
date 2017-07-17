@@ -87,7 +87,7 @@ rm -rf ${PIP_WHL_DIR} && mkdir -p ${PIP_WHL_DIR}
 bazel-bin/inquiry/tools/pip_package/build_pip_package ${PIP_WHL_DIR} || \
     die "build_pip_package FAILED"
 
-WHL_PATH=$(ls ${PIP_WHL_DIR}/inquiry*.whl)
+WHL_PATH=$(ls ${PIP_WHL_DIR}/iqtk*.whl)
 if [[ $(echo ${WHL_PATH} | wc -w) -ne 1 ]]; then
   die "ERROR: Failed to find exactly one built Inquiry .whl file in "\
 "directory: ${PIP_WHL_DIR}"

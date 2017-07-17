@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
+# e.g. sh inquiry/tools/ci_build/ci_build.sh inquiry/tools/ci_build/builds/pip.sh
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Dockerfile to be used in docker build
@@ -32,7 +34,7 @@ function upsearch () {
 # reasonable defaults if you run it outside of Jenkins.
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
 
-BASE_BUILD_TAG="${BUILD_TAG:-base}"
+#BASE_BUILD_TAG="${BUILD_TAG:-base}"
 
 # Determine the docker image name
 DOCKER_IMG_NAME="${BASE_BUILD_TAG}"
