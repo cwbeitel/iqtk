@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
+set -e
 
-DATA_PATH=$1
-REMOTE_TARGET=$2
-GCP_SERVICE_ACCOUNT_KEY_PATH=$3
-GCP_SERVICE_ACCOUNT=$4
-IMAGE=gcr.io/jbei-data/uplink:0.0.1
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Yeah not the way to do this will ask mark....
-KEY=`cat ${GCP_SERVICE_ACCOUNT_KEY_PATH}`
+die() {
+  echo $@
+  exit 1
+}
 
-docker run -v ${DATA_PATH}:/mnt/data \
-  -it --entrypoint /bin/bash $IMAGE \
-  -c "echo '$KEY' > ~/key.json && uplink -l /mnt/data \
-             -r ${REMOTE_TARGET} \
-             -k ~/key.json \
-             -s ${GCP_SERVICE_ACCOUNT}"
+if ! [ -x "$(command -v firebase)" ]; then
+  die "firebase cli utility not found on path, please install `npm install -g firebase-tools`."
+fi
+
+cd ${SCRIPT_DIR} && firebase deploy
+
+sh ${SCRIPT_DIR}/test-deploy.sh

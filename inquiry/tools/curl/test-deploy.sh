@@ -14,8 +14,22 @@
 # ==============================================================================
 set -e
 
-curl -fsSL get.docker.com -o get-docker.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-sh get-docker.sh
+die() {
+  echo $@
+  exit 1
+}
 
-docker pull gcr.io/jbei-cloud/iqtk:latest
+curl -fsSL scripts.iqtk.io/setup -o ${SCRIPT_DIR}/setup
+
+if ! [[ "cmp --silent ${SCRIPT_DIR}/setup ${SCRIPT_DIR}/public/setup" ]]; then
+  die "Setup script pulled does not match local."
+fi
+
+if ! [[ "docker run -it gcr.io/jbei-cloud/iqtk:latest iqtk checkup" ]]; then
+  # TODO: Doesn't work currently but you get the general idea
+  die "Docker image obtained from gcr.io/jbei-cloud/iqtk:latest could not load iqtk."
+fi
+
+rm ${SCRIPT_DIR}/setup

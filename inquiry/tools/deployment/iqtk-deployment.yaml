@@ -1,0 +1,21 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iqtk-manager-service
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: iqtk
+        tier: iqtk-manager-service
+    spec:
+      containers:
+      - name: iqtk-manager-service
+        image: gcr.io/jbei-cloud/iqtk:0.0.1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        ports:
+        - containerPort: 80
