@@ -53,11 +53,7 @@ TMPDIR=$(mktemp -d -t tmp.XXXXXXXXXX)
 
 echo $(date) : "=== Building release container in tmpdir: ${TMPDIR}"
 
-if [ ! -d bazel-bin/inquiry ]; then
-  echo "Could not find bazel-bin.  Did you run from the root of the build tree?"
-  exit 1
-fi
-
+ls ${WORKSPACE}
 cp ${DOCKERFILE_PATH} ${TMPDIR}/Dockerfile
 cp ${WORKSPACE}/pip_test/whl/* ${TMPDIR}
 
