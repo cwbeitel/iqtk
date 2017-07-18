@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
