@@ -25,6 +25,7 @@ test:
     - inquiry/tools/ci_build/ensure_gcloud_installed.sh
     - inquiry/tools/ci_build/ci_build.sh inquiry/tools/ci_build/builds/pip.sh
   post:
+    - bazel build //inquiry/...
     - inquiry/tools/ci_build/builds/build_release_container.sh
 
 deployment:
