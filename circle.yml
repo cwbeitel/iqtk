@@ -33,7 +33,7 @@ deployment:
     commands:
       # Quay registry push requires quay creds. specified as environment vars.
       # via. the CircleCI settings UI (Build settings > Environment variables)
-      - docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} -e ${DOCKER_EMAIL} quay.io
+      - docker login -u ${DOCKER_USER} -p "${DOCKER_PASS}" quay.io
       - docker tag ${BUILD_TAG} ${QUAY_REGISTRY}/${BUILD_TAG}
       - docker push ${QUAY_REGISTRY}/${BUILD_TAG}
 
