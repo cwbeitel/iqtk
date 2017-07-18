@@ -1,1 +1,11 @@
-IQTK
+# pip_package
+
+** Forked from the [tensorflow project](github.com/tensorflow/tensorflow), see [their LICENSE](https://github.com/tensorflow/tensorflow/blob/master/LICENSE). **
+
+Used primarily in ci_build/builds/pip.sh via.
+
+```bash
+bazel-bin/inquiry/tools/pip_package/build_pip_package ${PIP_WHL_DIR}
+```
+
+following `bazel build`.

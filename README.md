@@ -3,23 +3,18 @@
 </div>
 
 -----------------
-| **`Build Status`** | **`Quality`** |
-|----------------|-----------------|
-|[![CircleCI](https://circleci.com/gh/JBEI/iqtk.svg?style=svg)](https://circleci.com/gh/JBEI/iqtk)|[![Codacy Badge](https://api.codacy.com/project/badge/Grade/87bf3dd5af7c4527893917be1d23da10)](https://www.codacy.com?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=JBEI/iqtk&amp;utm_campaign=Badge_Grade)|
+| **`Build Status`** | **`Quality`** | **`Container`** |
+|----------------|-----------------|-----------------|
+|[![CircleCI](https://circleci.com/gh/iqtk/iqtk.svg?style=svg)](https://circleci.com/gh/iqtk/iqtk)|[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4dc4988373ec4b678279bed718321fcc)](https://www.codacy.com/app/chris-w-beitel/iqtk?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=iqtk/iqtk&amp;utm_campaign=Badge_Grade)|[![Docker Repository on Quay](https://quay.io/repository/iqtk/iqtk/status "Docker Repository on Quay")](https://quay.io/repository/iqtk/iqtk)|
 
-**We use [GitHub issues](https://github.com/.../issues) for
+**We use [GitHub issues](https://github.com/iqtk/iqtk/issues) for
 tracking requests and bugs.**
 
+** Please note: This project is currently pre-alpha and not intended for use.
 
 ## Installation
 
-A docker container containing the inquiry toolkit can be obtained using the following script:
-
-```bash
-curl scripts.iqtk.io/setup | bash
-```
-
-Or if Docker is already installed on the host machine via the following:
+The latest `iqtk` docker image can be obtained as follows:
 
 ```bash
 docker pull gcr.io/jbei-cloud/iqtk:latest

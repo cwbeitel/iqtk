@@ -27,6 +27,12 @@ if [[ "$(docker images -q iqtk-base:latest 2> /dev/null)" == "" ]]; then
   die "The base iqtk container must have been built before building release."
 fi
 
+function upsearch () {
+  test / == "$PWD" && return || \
+      test -e "$1" && echo "$PWD" && return || \
+      cd .. && upsearch "$1"
+}
+
 DOCKERFILE_PATH="${SCRIPT_DIR}/../Dockerfile.iqtk-service"
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
 
@@ -52,7 +58,7 @@ if [ ! -d bazel-bin/inquiry ]; then
 fi
 
 cp ${DOCKERFILE_PATH} ${TMPDIR}/Dockerfile
-cp pip_test/whl/* ${TMPDIR}
+cp ${WORKSPACE}/pip_test/whl/* ${TMPDIR}
 
 pushd ${TMPDIR}
 echo $(date) : "=== Building release container"

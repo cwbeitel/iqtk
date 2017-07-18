@@ -12,20 +12,23 @@ create-cluster:
 
 .PHONY: deploy-fission-core
 deploy-fission-core:
-	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-rbac.yaml
-	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-cloud.yaml
+	# TODO: Some of these won't work with --validate=false and I'm guessing that means there's
+	# a non-insignificant issue to fix.
+	# TODO: Check whether these are already deployed instead of attempting and failing.
+	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-rbac.yaml --validate=false
+	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-cloud.yaml --validate=false
 
 .PHONY: deploy-fission-logger
 deploy-fission-logger:
-	kubectl create -f https://raw.githubusercontent.com/fission/fission/master/fission-logger.yaml
+	kubectl create -f https://raw.githubusercontent.com/fission/fission/master/fission-logger.yaml --validate=false
 
 .PHONY: deploy-fission-ui
 deploy-fission-ui:
-	kubectl create -f https://raw.githubusercontent.com/fission/fission-ui/master/docker/fission-ui.yaml
+	kubectl create -f https://raw.githubusercontent.com/fission/fission-ui/master/docker/fission-ui.yaml --validate=false
 
 .PHONY: deploy-fission-nats
 deploy-fission-nats:
-	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-nats.yaml
+	kubectl create -f https://github.com/fission/fission/releases/download/nightly20170705/fission-nats.yaml --validate=false
 
 .PHONY: deploy-fission
 deploy-fission: deploy-fission-core deploy-fission-ui deploy-fission-logger deploy-fission-nats
@@ -45,14 +48,14 @@ push: build
 
 .PHONY: create-service
 create-service:
-	kubectl create -f iqtk-service.yaml
+	kubectl create -f iqtk-service.yaml --validate=false
 
 .PHONY: create-deployment
 create-deployment:
-	kubectl create -f iqtk-deployment.yaml
+	kubectl create -f iqtk-deployment.yaml --validate=false
 
 .PHONY: deploy
-deploy: create-service create-deployment
+deploy: deploy-fission create-service create-deployment
 
 .PHONY: delete
 delete:
