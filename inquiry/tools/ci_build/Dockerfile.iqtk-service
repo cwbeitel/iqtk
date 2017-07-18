@@ -10,3 +10,5 @@ RUN virtualenv "/install/venv" && chmod +x /install/venv/bin/activate
 RUN /install/venv/bin/activate
 
 RUN pip2 install /install/iqtk-*.tar.gz
+
+RUN iqtk

@@ -3,8 +3,8 @@ machine:
     CLOUDSDK_CORE_DISABLE_PROMPTS: 1
     BASE_BUILD_TAG: iqtk-base
     BUILD_TAG: iqtk:0.0.3
-    #REGISTRY: gcr.io/jbei-cloud
-    REGISTRY: quay.io/iqtk
+    GCR_REGISTRY: gcr.io/jbei-cloud
+    QUAY_REGISTRY: quay.io/iqtk
   services:
     - docker
 
@@ -25,17 +25,21 @@ test:
     - inquiry/tools/ci_build/ensure_gcloud_installed.sh
     - inquiry/tools/ci_build/ci_build.sh inquiry/tools/ci_build/builds/pip.sh
   post:
-    #- bazel build //inquiry/...
     - inquiry/tools/ci_build/builds/build_release_container.sh
 
 deployment:
   prod:
     branch: master
     commands:
-      #- inquiry/tools/ci_build/auth_gcloud.sh
-      #- docker tag ${BUILD_TAG} gcr.io/${GCR_REGISTRY_ACCT}/${BUILD_TAG}
-      # To push to GCR, must have defined SA_KEY and SA_EMAIL in ci env.
-      #- gcloud docker -- push gcr.io/${GCR_REGISTRY_ACCT}/${BUILD_TAG}
-      - docker tag ${BUILD_TAG} ${REGISTRY}/${BUILD_TAG}
-      - docker login quay.io -u ${DOCKER_USER} -p ${DOCKER_PASS}
-      - docker push ${REGISTRY}/${BUILD_TAG}
+      # Quay registry push requires quay creds. specified as environment vars.
+      # via. the CircleCI settings UI (Build settings > Environment variables)
+      - docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} -e ${DOCKER_EMAIL} quay.io
+      - docker tag ${BUILD_TAG} ${QUAY_REGISTRY}/${BUILD_TAG}
+      - docker push ${QUAY_REGISTRY}/${BUILD_TAG}
+
+      # To push to GCR, must have defined a GCP service account credentials with
+      # permission to push to the specified registry via. SA_KEY and SA_EMAIL
+      # variables in the CircleCI env., as above.
+      # - inquiry/tools/ci_build/auth_gcloud.sh
+      # - docker tag ${BUILD_TAG} ${GCR_REGISTRY}/${BUILD_TAG}
+      # - gcloud docker -- push ${GCR_REGISTRY}/${BUILD_TAG}
