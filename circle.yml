@@ -31,7 +31,7 @@ deployment:
   prod:
     branch: master
     commands:
-      - inquiry/tools/ci_build/auth-gcloud.sh
+      #- inquiry/tools/ci_build/auth_gcloud.sh
       #- docker tag ${BUILD_TAG} gcr.io/${GCR_REGISTRY_ACCT}/${BUILD_TAG}
       # To push to GCR, must have defined SA_KEY and SA_EMAIL in ci env.
       #- gcloud docker -- push gcr.io/${GCR_REGISTRY_ACCT}/${BUILD_TAG}
