@@ -11,18 +11,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Simplify inquiry-core level import."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-__VERSION__ = '0.0.2'
-
+import logging
 import os
-PROJECT_ROOT_PATH = '/'.join(os.path.dirname(os.path.abspath(__file__)).split('/')[:-1])
+import tempfile
+import unittest
 
-#import inquiry.framework
-from inquiry.framework import *
+from inquiry.framework import client
 
-from inquiry.framework.client import Client
+'''
+ability to run dummy WSW on container in prod. before extensive dev.
+'''
+
+class IQTKClientTest(unittest.TestCase):
+    pass
+
+class ServiceWrapperTest(unittest.TestCase):
+
+    def test_send_rec(self):
+
+        wsw = WorkflowServiceWrapper()
+
+
+if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.DEBUG)
+    unittest.main()

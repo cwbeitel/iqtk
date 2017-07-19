@@ -34,7 +34,7 @@ function upsearch () {
       cd .. && upsearch "$1"
 }
 
-DOCKERFILE_PATH="${SCRIPT_DIR}/../Dockerfile.iqtk-service"
+DOCKERFILE_PATH="${SCRIPT_DIR}/../Dockerfile.release"
 WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
 
 DOCKER_IMG_NAME="${BUILD_TAG}"
@@ -65,4 +65,3 @@ docker build -t ${DOCKER_IMG_NAME} \
     -f "${TMPDIR}/Dockerfile" "${TMPDIR}"
 popd
 rm -rf ${TMPDIR}
-echo $(date) : "=== Output wheel file is in: ${DEST}"

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -11,18 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Manager tests."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from google.cloud import pubsub
+CLUSTER_NAME=inquiry
 
-# pubsub_client = pubsub.Client()
-# topic_name = 'dev-topic'
-# topic = pubsub_client.topic(topic_name)
-# data = 'hello world'
-# data = data.encode('utf-8')
-# message_id = topic.publish(data)
-#
-# print('Message {} published.'.format(message_id))
+DEPLOYMENT=`gcloud container clusters list --filter=name=${CLUSTER_NAME}`
+if [ -z "${DEPLOYMENT}" ]; then
+	gcloud container clusters create ${CLUSTER_NAME} \
+		--scopes "cloud-platform" \
+		--num-nodes 4
+fi
+
+gcloud container clusters get-credentials ${CLUSTER_NAME}
+
+kubectl delete all -l app=iqtk
+kubectl create -f inquiry/tools/deploy_kube/configs/iqtk.yaml --validate=false

@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -11,18 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Simplify inquiry-core level import."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+export FISSION_URL=http://$(kubectl --namespace fission get svc controller -o=jsonpath='{..ip}')
+export FISSION_ROUTER=$(kubectl --namespace fission get svc router -o=jsonpath='{..ip}')
 
-__VERSION__ = '0.0.2'
+ENV_NAME=iqtk-fission-env
+ENV_VERSION=0.0.1
+ENV_TAG=quay.io/iqtk/${ENV_NAME}:${ENV_VERSION}
+FUNC_NAME=funcy
+FUNC_ROUTE=${FUNC_NAME}
 
-import os
-PROJECT_ROOT_PATH = '/'.join(os.path.dirname(os.path.abspath(__file__)).split('/')[:-1])
-
-#import inquiry.framework
-from inquiry.framework import *
-
-from inquiry.framework.client import Client
+# Create the environment and delete the previous if necessary
+if [[ "$(fission env list | grep ${ENV_NAME})" ]]; then
+  fission env delete --name ${ENV_NAME}
+fi
+fission env create --name ${ENV_NAME} --image ${ENV_TAG}

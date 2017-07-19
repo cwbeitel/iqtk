@@ -20,7 +20,7 @@ py_library(
       ':workflow',
       ':bq',
       ':viz',
-      ':service',
+      ':client',
       ':cli'
     ],
     visibility = ["//visibility:public"],
@@ -29,6 +29,15 @@ py_library(
 py_library(
     name = "cli",
     srcs = ["cli.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+    ],
+    visibility = ["//visibility:public"],
+)
+
+py_library(
+    name = "client",
+    srcs = ["client.py"],
     srcs_version = "PY2AND3",
     deps = [
     ],
@@ -159,25 +168,5 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
       ':viz'
-    ],
-)
-
-py_binary(
-    name = "service",
-    srcs = ["service.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-    ],
-    visibility = ["//visibility:public"],
-    main = 'service.py'
-)
-
-py_test(
-    name = "service_test",
-    size = "small",
-    srcs = ["test/service_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-      ':service'
     ],
 )

@@ -17,7 +17,7 @@ import unittest
 
 import inquiry.framework as iqf
 
-from inquiry.toolkit.simple.workflow import SimpleWorkflow
+from inquiry.toolkit.trigger_tester.workflow import SimpleWorkflow
 
 
 class WorkflowTest(unittest.TestCase):

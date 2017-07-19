@@ -23,7 +23,7 @@ import apache_beam as beam
 
 from apache_beam.io import ReadFromText
 
-from apache_beam.utils.pipeline_options import GoogleCloudOptions
+#from apache_beam.utils.pipeline_options import GoogleCloudOptions
 from apache_beam.io.gcp.internal.clients import bigquery
 
 from google.protobuf.json_format import MessageToDict
@@ -46,7 +46,8 @@ class WriteToBigQuery(beam.PTransform):
 
     def get_table(self, pipeline):
         """Utility to construct an output table reference."""
-        project = pipeline.options.view_as(GoogleCloudOptions).project
+        project = 'jbei-cloud'  # HACK
+        #project = pipeline.options.view_as(GoogleCloudOptions).project
         return '%s:%s.%s' % (project, self.dataset, self.table_name)
 
     def row_fn(self, pcoll):

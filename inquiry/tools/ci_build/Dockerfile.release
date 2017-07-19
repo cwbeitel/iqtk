@@ -1,0 +1,7 @@
+FROM iqtk-base:latest
+
+COPY . /app
+
+RUN pip2 install /app/iqtk-*.tar.gz
+
+RUN iqtk run

@@ -1,3 +1,4 @@
+
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -23,16 +24,6 @@ import click
 @click.group()
 def cli():
     pass
-
-@cli.command(context_settings=dict(
-    ignore_unknown_options=True,
-    allow_extra_args=True
-))
-#@click.option('--config', default=None, required=True)
-def service():
-    """Run the primary iqtk manager daemon."""
-    from inquiry.framework.service import Service
-    Service('dev-topic', 'dev-subscription').run()
 
 @cli.command(context_settings=dict(
     ignore_unknown_options=True,
