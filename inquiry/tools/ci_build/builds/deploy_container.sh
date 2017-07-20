@@ -32,7 +32,7 @@ if [[ -z "${BUILD_TAG}" ]]; then
   die "The variable BUILD_TAG must be defined before building release container."
 fi
 
-docker login -u ${QUAY_IO_IQTK_UNAME} -p ${QUAY_IO_IQTK_PASSWORD} quay.io
+docker login -u ${QUAY_IO_IQTK_UNAME} -p ${QUAY_IO_IQTK_PASSWORD} -e ${QUAY_IO_IQTK_EMAIL} quay.io
 
 docker tag ${BUILD_TAG} quay.io/iqtk/${BUILD_TAG}
 

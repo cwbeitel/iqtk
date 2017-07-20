@@ -2,14 +2,14 @@ machine:
   environment:
     CLOUDSDK_CORE_DISABLE_PROMPTS: 1
     BASE_BUILD_TAG: iqtk-base
-    BUILD_TAG: iqtk:0.0.3
+    BUILD_TAG: iqtk:0.0.4
   services:
     - docker
 
 dependencies:
   cache_directories:
-    - "/home/ubuntu/.cache/bazel"
-    - "~/docker"
+    #- "/home/ubuntu/.cache/bazel"
+    #- "~/docker"
     - ~/google-cloud-sdk
 
   override:
