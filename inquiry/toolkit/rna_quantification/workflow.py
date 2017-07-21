@@ -65,20 +65,24 @@ class TranscriptomicsWorkflow(Workflow):
 
         # For each condition, create a PCollection to store the input read pairs.
         reads_a = util.fc_create(p, args.cond_a_pairs)
-        # reads_b = util.fc_create(p, args.cond_b_pairs)
+        reads_b = util.fc_create(p, args.cond_b_pairs)
 
         # For each pair of reads, use tophat to perform split-read alignment.
         # Condition A.
         th_a = (reads_a | task.ContainerTaskRunner(
             ops.TopHat(args=args, ref_fasta=args.ref_fasta,
+                   genes_gtf=args.genes_gtf, tag='cond_a')))
+
+        th_b = (reads_b | task.ContainerTaskRunner(
+            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
                    genes_gtf=args.genes_gtf, tag='cond_b')))
-        #
+
         # th_a = ops.tophat(reads_a,
         #                   ref_fasta=args.ref_fasta,
         #                   args=args,
         #                   genes_gtf=args.genes_gtf,
         #                   tag='cond_b')
-        #
+
         # # The same, but for condition B.
         # th_b = ops.tophat(reads_b,
         #                   ref_fasta=args.ref_fasta,
@@ -88,16 +92,20 @@ class TranscriptomicsWorkflow(Workflow):
         #
         # # Subset the outputs of the tophat steps to obtain only the bam (alignment)
         # # files. Then combine the collections.
-        # align_a = util.match(th_a, {'file_type': 'bam'})
-        # align_b = util.match(th_b, {'file_type': 'bam'})
-        # align = util.combine(p, (align_a, align_b))
-        #
+        align_a = util.match(th_a, {'file_type': 'bam'})
+        align_b = util.match(th_b, {'file_type': 'bam'})
+        align = util.combine(p, (align_a, align_b))
+
         # # For each set of reads, perform a transcriptome assembly with cufflinks,
         # # yielding one gtf feature annotation for each input read set.
+        cl = (align | task.ContainerTaskRunner(ops.Cufflinks(args=args)))
+
         # cuff = ops.cufflinks(align, args=args)
         #
         # # Perform a single `cuffmerge` operation to merge all of the gene
         # # annotations into a single annotation.
+        cm = (cl | task.ContainerTaskRunner(ops.CuffMerge(args=args)))
+
         # cm = ops.cuffmerge(
         #     fc_union(f.match(cuff, {'file_type': 'transcripts.gtf'})),
         #     ref_fasta=args.ref_fasta,
@@ -107,13 +115,15 @@ class TranscriptomicsWorkflow(Workflow):
         # # Run a single cuffdiff operation comparing the prevalence of features in
         # # the input annotatio across conditions using reads obtained for those
         # # conditions.
+        cd = (cm | task.ContainerTaskRunner(ops.CuffDiff(args=args)))
+
         # cd = ops.cuffdiff(f.match(cm, {'file_type': 'gtf'}),
         #                   ref_fasta=args.ref_fasta,
         #                   args=args,
         #                   cond_a_bams=AsList(align_a),
         #                   cond_b_bams=AsList(align_b))
 
-        return th_a
+        return cd
 
 
 def run(config=None):

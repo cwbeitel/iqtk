@@ -114,12 +114,18 @@ class TopHat(task.ContainerTask):
                           localize(read_pair[1])])
 
         yield self.submit(cmd.txt, inputs=inputs,
-                          expected_outputs=[{'bam': 'accepted_hits.bam'},
-                                            {'txt': 'align_summary.txt'},
-                                            {'bed': 'deletions.bed'},
-                                            {'bed': 'insertions.bed'},
-                                            {'bed': 'junctions.bed'},
-                                            {'info': 'prep_reads.info'}])
+                          expected_outputs=[{'name': 'accepted_hits.bam',
+                                             'type': 'bam'},
+                                            {'name': 'align_summary.txt',
+                                             'type': 'txt'},
+                                            {'name': 'deletions.bed',
+                                             'type': 'bed'},
+                                            {'name': 'insertions.bed',
+                                             'type': 'bed'},
+                                            {'name': 'junctions.bed',
+                                             'type': 'bed'},
+                                            {'name': 'prep_reads.info',
+                                             'type': 'info'}])
 
 
 class Cufflinks(task.ContainerTask):

@@ -26,7 +26,7 @@ _VERSION = '0.0.5'
 
 REQUIRED_PACKAGES = [
     "google-cloud-pubsub",
-    "apache-beam",
+    "google-cloud-dataflow",
     "protobuf",
     "google-cloud-bigquery",
     "docker",
