@@ -85,7 +85,7 @@ def transcriptomics(config):
 @click.option('--config', default=None, required=True)
 def genotype(config):
     """Determine genotypes from sequence data."""
-    from inquiry.toolkit.genotyping.workflow import run
+    from inquiry.toolkit.genotyper_gatk.workflow import run
     run(config)
 
 @run.command(context_settings=dict(

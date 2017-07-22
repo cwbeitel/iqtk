@@ -76,20 +76,6 @@ class TranscriptomicsWorkflow(Workflow):
         th_b = (reads_b | task.ContainerTaskRunner(
             ops.TopHat(args=args, ref_fasta=args.ref_fasta,
                    genes_gtf=args.genes_gtf, tag='cond_b')))
-
-        # th_a = ops.tophat(reads_a,
-        #                   ref_fasta=args.ref_fasta,
-        #                   args=args,
-        #                   genes_gtf=args.genes_gtf,
-        #                   tag='cond_b')
-
-        # # The same, but for condition B.
-        # th_b = ops.tophat(reads_b,
-        #                   ref_fasta=args.ref_fasta,
-        #                   args=args,
-        #                   genes_gtf=args.genes_gtf,
-        #                   tag='cond_a')
-        #
         # # Subset the outputs of the tophat steps to obtain only the bam (alignment)
         # # files. Then combine the collections.
         align_a = util.match(th_a, {'file_type': 'bam'})
@@ -100,28 +86,14 @@ class TranscriptomicsWorkflow(Workflow):
         # # yielding one gtf feature annotation for each input read set.
         cl = (align | task.ContainerTaskRunner(ops.Cufflinks(args=args)))
 
-        # cuff = ops.cufflinks(align, args=args)
-        #
         # # Perform a single `cuffmerge` operation to merge all of the gene
         # # annotations into a single annotation.
         cm = (cl | task.ContainerTaskRunner(ops.CuffMerge(args=args)))
 
-        # cm = ops.cuffmerge(
-        #     fc_union(f.match(cuff, {'file_type': 'transcripts.gtf'})),
-        #     ref_fasta=args.ref_fasta,
-        #     args=args,
-        #     genes_gtf=args.genes_gtf)
-        #
         # # Run a single cuffdiff operation comparing the prevalence of features in
         # # the input annotatio across conditions using reads obtained for those
         # # conditions.
         cd = (cm | task.ContainerTaskRunner(ops.CuffDiff(args=args)))
-
-        # cd = ops.cuffdiff(f.match(cm, {'file_type': 'gtf'}),
-        #                   ref_fasta=args.ref_fasta,
-        #                   args=args,
-        #                   cond_a_bams=AsList(align_a),
-        #                   cond_b_bams=AsList(align_b))
 
         return cd
 

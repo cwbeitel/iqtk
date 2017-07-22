@@ -157,7 +157,7 @@ class Cufflinks(task.ContainerTask):
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(MSConvert, self).__init__(task_label='cufflinks', args=args,
+        super(Cufflinks, self).__init__(task_label='cufflinks', args=args,
                                         container=container)
 
     def process(self, file_path):
@@ -214,7 +214,7 @@ class CuffMerge(task.ContainerTask):
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(MSConvert, self).__init__(task_label='cuffmerge', args=args,
+        super(CuffMerge, self).__init__(task_label='cuffmerge', args=args,
                                         container=container)
 
     def process(self, file_path):
@@ -282,7 +282,7 @@ class CuffDiff(task.ContainerTask):
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(MSConvert, self).__init__(task_label='cuffdiff', args=args,
+        super(CuffDiff, self).__init__(task_label='cuffdiff', args=args,
                                         container=container)
 
     def process(self, file_path):

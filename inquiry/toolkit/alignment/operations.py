@@ -36,7 +36,7 @@ class BWAMem(iqf.task.ContainerTask):
         super(BWAMem, self).__init__(task_label='bwa_mem', args=args,
                                         container=container)
 
-    def process(self, file_path):
+    def process(self, file_path, ref_fasta):
 
         ref_files = gsutil_expand_stem(ref_fasta.split('.fa')[0])
 

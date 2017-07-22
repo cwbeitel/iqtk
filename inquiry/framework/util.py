@@ -516,7 +516,7 @@ def check_setter_type(setter_name, expected_type, value, allow_none=False):
     if not isinstance(value, expected_type):
         msg = 'Setting %s requires argument of type `%s`, saw: %s' % (
             setter_name, expected_type, value)
-        logging.exception(msg)
+        logging.error(msg)
         raise ValueError(msg)
 
 
@@ -525,7 +525,7 @@ def expect_type(value, t, allow_none=False):
         return
     if not isinstance(value, t):
         msg = 'Expected type %s, saw %s.' % (t, value)
-        logging.exception(msg)
+        logging.error(msg)
         raise ValueError(msg)
 
 
@@ -533,8 +533,9 @@ def regex_match(value, reg):
     try:
         pattern = re.compile(reg)
     except Exception as e:
-        logging.exception('Error while compiling regex: %s' % reg)
-        raise ValueError()
+        msg = 'Error while compiling regex: %s' % re
+        logging.error(msg)
+        raise ValueError(msg)
     return (pattern.match(value) is not None)
 
 

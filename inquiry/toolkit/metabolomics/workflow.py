@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from . import operations as ops
 from inquiry.framework.workflow import Workflow
 from inquiry.framework import util
+from inquiry.framework import task
 
 
 class ConvertWorkflow(Workflow):
@@ -33,37 +34,37 @@ class ConvertWorkflow(Workflow):
         }
         super(ConvertWorkflow, self).__init__()
 
-    def define(self, p):
+    def define(self):
         """Metabolome analysis workflow."""
-        inputs = util.create_file_set(p, self.args.archives)
-        return ops.msconvert(inputs, self.args)
+        return (util.fc_create(self.p, util.create_file_set(self.p, self.args.archives))
+                | task.ContainerTaskRunner(ops.MSConvert(self.args)))
 
 
-class XCMSPreprocess(Workflow):
-    """Convert .d files to mzml and preprocess with XCMS."""
-
-    def __init__(self):
-        """Initialize an msconvert workflow."""
-        self.tag = 'xcms3-preprocess'
-        self.arg_template = {
-            'files': {
-                'help': 'List of paths to files.'
-            }
-        }
-        super(XCMSPreprocess, self).__init__()
-
-    def define(self, p):
-        """Metabolome analysis workflow."""
-        # Hack ... so here we will want to map from a pcollection down
-        # to a single array.
-        inputs = util.create_file_set(p, [self.args.files])
-        return ops.xcms_preprocess(inputs, self.args)
+# class XCMSPreprocess(Workflow):
+#     """Convert .d files to mzml and preprocess with XCMS."""
+#
+#     def __init__(self):
+#         """Initialize an msconvert workflow."""
+#         self.tag = 'xcms3-preprocess'
+#         self.arg_template = {
+#             'files': {
+#                 'help': 'List of paths to files.'
+#             }
+#         }
+#         super(XCMSPreprocess, self).__init__()
+#
+#     def define(self, p):
+#         """Metabolome analysis workflow."""
+#         # Hack ... so here we will want to map from a pcollection down
+#         # to a single array.
+#         inputs = util.create_file_set(p, [self.args.files])
+#         return ops.xcms_preprocess(inputs, self.args)
 
 
 def run(config=None):
     """Run as a Dataflow."""
-    #ConvertWorkflow().run(config)
-    Preprocess().run(config)
+    ConvertWorkflow().run(config)
+    #Preprocess().run(config)
 
 if __name__ == '__main__':
     run(sys.argv[1])

@@ -1,7 +1,0 @@
-syntax = "proto3";
-package inquiry.toolkit.metagenome.schemas;
-import "bq_table_name.proto";
-
-message Metagenome {
-  option (gen_bq_schema.table_name) = "metagenome";
-}

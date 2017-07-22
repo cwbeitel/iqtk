@@ -242,8 +242,10 @@ def parse_arguments(job_tag, bucket=None, num_workers=5, project=None,
     #     pargs.extend('--num_workers=%d' % int(known_args.num_workers))
 
     if known_args.cloud:
-        bundle_path = bundle(known_args)
-        pargs.extend(['--extra_package=%s' % bundle_path])
+        # bundle_path = bundle(known_args)
+        # pargs.extend(['--extra_package=%s' % bundle_path])
+        path = '/Users/cb/Desktop/release/iqtk/pip_test/whl/iqtk-0.0.5-py2-none-any.whl'
+        pargs.extend(['--extra_package=%s' % path])  ## Hack
 
     if requirements is not None:
         reqs = util.dump_reqs(requirements)

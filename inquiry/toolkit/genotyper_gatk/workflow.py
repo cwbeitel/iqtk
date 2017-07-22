@@ -18,6 +18,7 @@ from __future__ import absolute_import
 from . import operations as ops
 from inquiry.framework.workflow import Workflow
 from inquiry.framework import util
+from inquiry.framework import task
 
 
 class GenotypeGATKWorkflow(Workflow):
@@ -35,9 +36,15 @@ class GenotypeGATKWorkflow(Workflow):
         }
         super(GenotypeGATKWorkflow, self).__init__()
 
-    def define(self, p):
-        ref = args.ref_fasta
-        reads = util.fc_create(p, self.args.reads)
+    def define(self):
+        return (util.fc_create(self.p, self.args.reads)
+                | task.ContainerTaskRunner(
+                    ops.CombinedSamtoolsGenotyper(
+                        self.args,
+                        self.args.ref_fasta
+                        )))
+
+        reads = util.fc_create(self.p, self.args.reads)
         return ops.genotype(reads, self.args)
 
 def run(config=None):

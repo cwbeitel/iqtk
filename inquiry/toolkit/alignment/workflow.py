@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from . import operations as ops
 from inquiry.framework.workflow import Workflow
 from inquiry.framework import util
+from inquiry.framework import task
 
 class AlignmentWorkflow(Workflow):
 
@@ -33,7 +34,7 @@ class AlignmentWorkflow(Workflow):
         }
         super(AlignmentWorkflow, self).__init__()
 
-    def define(self, p):
+    def define(self):
         """Perform sequence alignment with BWA MEM and optional pre- and post-ops.
 
         Args:
@@ -44,9 +45,9 @@ class AlignmentWorkflow(Workflow):
            http://bio-bwa.sourceforge.net/
         """
 
-        reads = util.fc_create(p, args.reads)
-
-        ops.bwa_mem(reads, args=args)
+        return (util.fc_create(self.p, self.args.reads)
+                | task.ContainerTaskRunner(ops.BWAMem(self.args,
+                                                      self.args.ref_fasta)))
 
 
 def run(config=None):

@@ -34,10 +34,6 @@ class SimpleOp(task.ContainerTask):
     def process(self, file_path):
 
         cmd = util.Command(['pwd'])
-
-        # cmd = util.Command(['wc -c', util.localize(file_path),
-        #                     '>', self.out_path + 'count.txt'])
-
         yield self.submit(cmd.txt, inputs=[file_path])
 
 

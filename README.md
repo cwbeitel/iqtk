@@ -10,35 +10,37 @@
 **We use [GitHub issues](https://github.com/iqtk/iqtk/issues) for
 tracking requests and bugs.**
 
+** Please stay tuned for the alpha version which will be needing testers and feedback **
+
 ## Getting started
 
 Here are a few tutorials to get you started!
 
 * [Genotype Analysis with GATK:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/genotype-gatk.ipynb) Learn how to call genome sequence polymorphisms against a reference genome sequence.
-* [Metabolome analysis with XCMS3:]() Learn how to use XCMS3 to quantify the levels of metabolites in a sample of interest.
-* [Transcriptome analysis with the Tuxedo suite:]() Learn how to quantify and compare gene expression levels across samples.
+* [Metabolome analysis with XCMS3:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/metabolite-analysis.ipynb) Learn how to use XCMS3 to quantify the levels of metabolites in a sample of interest.
+* [Transcriptome analysis with the Tuxedo suite:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/rna_quantification.ipynb) Learn how to quantify and compare gene expression levels across samples.
 
-Each one of the above tutorials first shows you how to parameterize a workflow run both from the DataFlow management UI. For tutorials on using the developer `iqtk` command line interface, check out the README included with each of the workflows in the [core toolkit](https://github.com/iqtk/iqtk/tree/master/inquiry/toolkit) (or ask your local dev to do that ;)).
+Each one of the above tutorials first shows you how to parameterize a workflow run both from the DataFlow management UI (TODO). For tutorials on using the developer `iqtk` command line interface, check out the README included with each of the workflows in the [core toolkit](https://github.com/iqtk/iqtk/tree/master/inquiry/toolkit) (TODO).
 
 # Developers
 
-## Installation
+## Running workflows from the command line
 
-The latest `iqtk` docker image can be obtained as follows:
+In addition to the above, workflow runs can be initiated from the command line allowing among other things programmatic integration with other parts of an organization's infrastructure.
 
-```bash
-docker pull gcr.io/jbei-cloud/iqtk:0.0.1
-```
+### Setup
 
-The toolkit can also be pip installed directly but if using this approach we suggest doing so within a virtual environment like `conda` or `virtualenv`.
+For this purpose, the toolkit can be installed (which we suggest doing within a virtual environment like `conda` or `virtualenv`) with the following command.
 
 ```bash
 pip install iqtk
 ```
 
-## Examples
+Alternatively, the latest `iqtk` docker image can be obtained as follows:
 
-Most users of this system will be concerned with writing and running analytical workflows. The following examples provide a starting point for these concerns.
+```bash
+docker pull quay.io/iqtk/iqtk
+```
 
 ### Running a workflow
 
@@ -77,9 +79,13 @@ provided a config file with the necessary input files. The following is an examp
 
 ```
 
+## Developing workflows
+
+New workflows can be developed in an environment where `iqtk` has been pip installed by, at the top level, subclassing the core `iqtk.Workflow` object along with making use of the core `util.fc_create`, `util.match`, and `util.combine` operations to express how file objects resulting from an operation should be mapped to a downstream operation.
+
 ### Writing a workflow
 
-To illustrate the structure (and hopefully simplicity) of building new workflows, per one of the core objectives of the project, the following  example (a simplified version of the full RNA-seq workflow) is provided:
+To illustrate the structure (and hopefully simplicity) of building new workflows, per one of the core objectives of the project, the following example (a simplified version of the full RNA-seq workflow) is provided. As you can see a `Workflow` subclass `define` method specifies a mapping of input and intermediate file collections through a series of operations, providing a file property query syntax to express abstract notions of workflow structure (e.g. "the files that should be processed by cufflinks are all of the files of type bam produced from the alignment steps").
 
 ```python
 
@@ -95,35 +101,42 @@ class TranscriptomicsWorkflow(Workflow):
 
         # For each condition, create a PCollection to store the input read pairs.
         reads_a = util.fc_create(p, args.cond_a_pairs)
+        reads_b = util.fc_create(p, args.cond_b_pairs)
 
-        th_a = ops.tophat(reads_a,
-                          ref_fasta=args.ref_fasta,
-                          args=args,
-                          genes_gtf=args.genes_gtf,
-                          tag='cond_b')
+        # For each pair of reads, use tophat to perform split-read alignment.
+        # Condition A.
+        th_a = (reads_a | task.ContainerTaskRunner(
+            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
+                   genes_gtf=args.genes_gtf, tag='cond_a')))
 
-        # The same, but for condition B.
-        th_b = ops.tophat(reads_b,
-                          ref_fasta=args.ref_fasta,
-                          args=args,
-                          genes_gtf=args.genes_gtf,
-                          tag='cond_a')
-
-        # Subset the outputs of the tophat steps to obtain only the bam (alignment)
-        # files. Then combine the collections.
+        th_b = (reads_b | task.ContainerTaskRunner(
+            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
+                   genes_gtf=args.genes_gtf, tag='cond_b')))
+        # # Subset the outputs of the tophat steps to obtain only the bam (alignment)
+        # # files. Then combine the collections.
         align_a = util.match(th_a, {'file_type': 'bam'})
         align_b = util.match(th_b, {'file_type': 'bam'})
         align = util.combine(p, (align_a, align_b))
 
-        # For each set of reads, perform a transcriptome assembly with cufflinks,
-        # yielding one gtf feature annotation for each input read set.
-        cuff = ops.cufflinks(align, args=args)
+        # # For each set of reads, perform a transcriptome assembly with cufflinks,
+        # # yielding one gtf feature annotation for each input read set.
+        cl = (align | task.ContainerTaskRunner(ops.Cufflinks(args=args)))
+
+        # # Perform a single `cuffmerge` operation to merge all of the gene
+        # # annotations into a single annotation.
+        cm = (cl | task.ContainerTaskRunner(ops.CuffMerge(args=args)))
+
+        # # Run a single cuffdiff operation comparing the prevalence of features in
+        # # the input annotatio across conditions using reads obtained for those
+        # # conditions.
+        cd = (cm | task.ContainerTaskRunner(ops.CuffDiff(args=args)))
+
 
         return cuff
 
 ```
 
-Workflows are composed of operations, the basic building block that can be shared and remixed to build new workflows. A trivial illustrative example is the following:
+Instances of `ContainerTask`, such as `TopHat`, can easily be shared among a community of developers and remixed to quickly prototype new workflows. The following simple example illustrates how developers can subclass `ContainerTask` to create new containerized operations.
 
 ```python
 class TopHat(task.ContainerTask):
@@ -144,9 +157,9 @@ class TopHat(task.ContainerTask):
                           expected_outputs=[{'txt': 'file.txt'}])
 ```
 
-As one can see significant benefit can be derived by moving from simpler domain-specific workflow languages to the more expressive language of python.
+Here one can see that the platform and environment in which a task runs is abstracted permitting it to be parameterized at runtime and simplifying the operational considerations for workflow developers.
 
-For more detailed examples of workflows and operations check out any of those provided as part of the core toolkit, e.g. [the one for RNA-seq analysis](inquiry/toolkit/rna_quantification/workflow.py).
+For more detailed examples of workflows and operations check out any of those provided as part of the core toolkit, e.g. [the one for RNA-seq analysis](https://github.com/iqtk/iqtk/blob/master/inquiry/toolkit/rna_quantification/workflow.py).
 
 ### Data schema
 
@@ -172,11 +185,11 @@ message DiffExpressionLevel {
 }
 ```
 
-Browse the full schema [here].
+For more details you can [browse the full schema](https://github.com/iqtk/iqtk/blob/master/inquiry/protobuf/inquiry/toolkit/rna_quantification/schemas/rna_quantification.proto) or check out a [BigQuery table](https://bigquery.cloud.google.com/table/jbei-cloud:somedataset.sometable2?tab=preview) with RNA-seq data using this schema.
 
 ## Syncing data from instruments
 
-Included in the toolkit we have a sync daemon that currently is a simple wrapper of the `gcloud rsync ...` utility. The plan is to extend this with the ability to sync to various other providers and to be an intermediate for instrument logs as they are generated, beyond just syncing resulting data.
+Included in the toolkit we have a sync daemon that currently is a simple wrapper of the `gcloud rsync ...` utility. The plan is to extend this utility to be a more generalized intermediate capable of syncing only subsets of data and compressing data prior to sync.
 
 The uplink daemon can be initiated as follows:
 
@@ -188,23 +201,17 @@ iqtk uplink --local_path=/my/source/dir \
             --sleep_time=600
 ```
 
-Make sure the serivce account you create has read and write access to the target bucket and logs; documentation [here](https://cloud.google.com/storage/docs/authentication). The following is an example:
-
-```bash
-# example
-uplink -l /path/to/example -r gs://[your-bucket]/[your-target-path] -r 30
-```
+Make sure the service account you create has read and write access to the target bucket and logs; documentation [here](https://cloud.google.com/storage/docs/authentication).
 
 ## Architecture overview
 
-The following diagram provides a non-technical summary of the cloud architecture implemented herein. Please refer to the [design document](DESIGN.md) for a technical diagram and per-component narratives.
+The following diagram provides a non-technical summary of the cloud architecture implemented herein. Please refer to the [design document](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/DESIGN.md) for a technical diagram and per-component narratives.
 
-![CircleCI](inquiry/docs/assets/arch-pm.png)
-
+![](inquiry/docs/assets/arch-pmm.png)
 
 ### Acknowledgements
 
-We would like to acknowledge the value of input received from members of the Google Genomics team (summarized this [post](https://opensource.googleblog.com/2016/11/docker-dataflow-happier-workflows.html)). See also [DockerFlow](https://github.com/googlegenomics/dockerflow) for a Java implementation of Airflow-style container workflow orchestration with Beam. We also acknowledge the TensorFlow project, see their [LICENSE](https://github.com/tensorflow/tensorflow/blob/master/LICENSE), for various build-related tooling from their project we built upon.
+We would like to acknowledge the value of input received from members of the Google Genomics team (summarized this [post](https://opensource.googleblog.com/2016/11/docker-dataflow-happier-workflows.html)). See also [DockerFlow](https://github.com/googlegenomics/dockerflow) for the Java implementation of container workflow orchestration with Beam that directly inspired this work. We also acknowledge the TensorFlow project, see their [LICENSE](https://github.com/tensorflow/tensorflow/blob/master/LICENSE), for various build-related tooling from their project we built upon.
 
 ### Contact
 
