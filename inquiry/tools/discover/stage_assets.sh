@@ -21,10 +21,12 @@ die() {
   exit 1
 }
 
-if ! [ -x "$(command -v firebase)" ]; then
-  die "firebase cli utility not found on path, please install `npm install -g firebase-tools`."
-fi
+function upsearch () {
+  test / == "$PWD" && return || \
+      test -e "$1" && echo "$PWD" && return || \
+      cd .. && upsearch "$1"
+}
 
-cd ${SCRIPT_DIR} && firebase deploy
+WORKSPACE="${WORKSPACE:-$(upsearch WORKSPACE)}"
 
-sh ${SCRIPT_DIR}/test-deploy.sh
+cp -r ${WORKSPACE}/inquiry/docs/assets ${SCRIPT_DIR}/public/

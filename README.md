@@ -12,6 +12,8 @@ tracking requests and bugs.**
 
 ** Please stay tuned for the alpha version which will be needing testers and feedback **
 
+# Check out the full documentation at <b><a href="http://iqtk.io">iqtk.io</a></b>
+
 ## Getting started
 
 Here are a few tutorials to get you started!
@@ -20,7 +22,7 @@ Here are a few tutorials to get you started!
 * [Metabolome analysis with XCMS3:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/metabolite-analysis.ipynb) Learn how to use XCMS3 to quantify the levels of metabolites in a sample of interest.
 * [Transcriptome analysis with the Tuxedo suite:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/rna_quantification.ipynb) Learn how to quantify and compare gene expression levels across samples.
 
-Each one of the above tutorials first shows you how to parameterize a workflow run both from the DataFlow management UI (TODO). For tutorials on using the developer `iqtk` command line interface, check out the README included with each of the workflows in the [core toolkit](https://github.com/iqtk/iqtk/tree/master/inquiry/toolkit) (TODO).
+Each of the above tutorials shows you how to submit workflows form the `iqtk` command line utility as well as an aspirational demo of the DataFlow UI for submitting these as templates.
 
 # Developers
 
@@ -106,33 +108,52 @@ class TranscriptomicsWorkflow(Workflow):
         # For each pair of reads, use tophat to perform split-read alignment.
         # Condition A.
         th_a = (reads_a | task.ContainerTaskRunner(
-            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
-                   genes_gtf=args.genes_gtf, tag='cond_a')))
+            ops.TopHat(args=args,
+                       ref_fasta=args.ref_fasta,
+                       genes_gtf=args.genes_gtf,
+                       tag='cond_a')
+            ))
 
         th_b = (reads_b | task.ContainerTaskRunner(
-            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
-                   genes_gtf=args.genes_gtf, tag='cond_b')))
-        # # Subset the outputs of the tophat steps to obtain only the bam (alignment)
-        # # files. Then combine the collections.
+            ops.TopHat(args=args,
+                       ref_fasta=args.ref_fasta,
+                       genes_gtf=args.genes_gtf,
+                       tag='cond_b')
+            ))
+
+        # Subset the outputs of the tophat steps to obtain only the bam (alignment)
+        # files. Then combine the collections.
         align_a = util.match(th_a, {'file_type': 'bam'})
         align_b = util.match(th_b, {'file_type': 'bam'})
         align = util.combine(p, (align_a, align_b))
 
-        # # For each set of reads, perform a transcriptome assembly with cufflinks,
-        # # yielding one gtf feature annotation for each input read set.
-        cl = (align | task.ContainerTaskRunner(ops.Cufflinks(args=args)))
+        # For each set of reads, perform a transcriptome assembly with cufflinks,
+        # yielding one gtf feature annotation for each input read set.
+        cl = (align | task.ContainerTaskRunner(
+            ops.Cufflinks(args=args)
+            ))
 
-        # # Perform a single `cuffmerge` operation to merge all of the gene
-        # # annotations into a single annotation.
-        cm = (cl | task.ContainerTaskRunner(ops.CuffMerge(args=args)))
+        # Perform a single `cuffmerge` operation to merge all of the gene
+        # annotations into a single annotation.
+        cm = (util.match(cl, {'file_type': 'transcripts.gtf'})
+              | task.ContainerTaskRunner(
+                  ops.CuffMerge(args=args,
+                                ref_fasta=args.ref_fasta,
+                                genes_gtf=args.genes_gtf)
+                  ))
 
-        # # Run a single cuffdiff operation comparing the prevalence of features in
-        # # the input annotatio across conditions using reads obtained for those
-        # # conditions.
-        cd = (cm | task.ContainerTaskRunner(ops.CuffDiff(args=args)))
+        # Run a single cuffdiff operation comparing the prevalence of features in
+        # the input annotatio across conditions using reads obtained for those
+        # conditions.
+        cd = (util.match(cm, {'file_type': 'gtf'})
+              | task.ContainerTaskRunner(
+                  ops.CuffDiff(args=args,
+                               ref_fasta=args.ref_fasta,
+                               cond_a_bams=AsList(align_a),
+                               cond_b_bams=AsList(align_b))
+                  ))
 
-
-        return cuff
+        return cd
 
 ```
 
@@ -171,7 +192,7 @@ message DiffExpressionLevel {
   string id = 1;
   string geneid = 2;
   string gene = 3;
-  string locus = 4;``
+  string locus = 4;
   string sample1 = 5;
   string sample2 = 6;
   string status = 7;

@@ -15,6 +15,8 @@
 
 from __future__ import absolute_import
 
+from apache_beam.pvalue import AsList
+
 import inquiry.toolkit.rna_quantification.operations as ops
 from inquiry.framework.workflow import Workflow
 from inquiry.framework import util
@@ -41,6 +43,39 @@ class TranscriptomicsWorkflow(Workflow):
                 'help': 'read pairs for condition b'
             }
         }
+        self.meta = {
+          "name": "rna_quantification",
+          "description": "Use the tuxedo transcriptome analysis suite to obtain differential transcript expression levels for an RNA-seq dataset.",
+          "parameters": [{
+            "name": "ref_fasta",
+            "label": "Reference FASTA",
+            "help_text": "A reference genome assembly in FASTA format aginst which to align reads.",
+            "regexes": ["^gs:\/\/[^\n\r]+$"],
+            "is_optional": False
+          },
+          {
+            "name": "genes_gtf",
+            "label": "Genes GTF",
+            "help_text": "Reference genes annotation in GTF format.",
+            "regexes": ["^gs:\/\/[^\n\r]+$"],
+            "is_optional": False
+          },
+          {
+            "name": "cond_a_pairs",
+            "label": "Condition A read pairs",
+            "help_text": "A comma-separated list of read pairs belonging to condition A.",
+            "regexes": ["^gs:\/\/[^\n\r]+$"],
+            "is_optional": False
+          },
+          {
+            "name": "cond_b_pairs",
+            "label": "Condition B read pairs",
+            "help_text": "A comma-separated list of read pairs belonging to condition B.",
+            "regexes": ["^gs:\/\/[^\n\r]+$"],
+            "is_optional": False
+          }]
+        }
+
         super(TranscriptomicsWorkflow, self).__init__()
 
     def define(self):
@@ -70,30 +105,51 @@ class TranscriptomicsWorkflow(Workflow):
         # For each pair of reads, use tophat to perform split-read alignment.
         # Condition A.
         th_a = (reads_a | task.ContainerTaskRunner(
-            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
-                   genes_gtf=args.genes_gtf, tag='cond_a')))
+            ops.TopHat(args=args,
+                       ref_fasta=args.ref_fasta,
+                       genes_gtf=args.genes_gtf,
+                       tag='cond_a')
+            ))
 
         th_b = (reads_b | task.ContainerTaskRunner(
-            ops.TopHat(args=args, ref_fasta=args.ref_fasta,
-                   genes_gtf=args.genes_gtf, tag='cond_b')))
-        # # Subset the outputs of the tophat steps to obtain only the bam (alignment)
-        # # files. Then combine the collections.
+            ops.TopHat(args=args,
+                       ref_fasta=args.ref_fasta,
+                       genes_gtf=args.genes_gtf,
+                       tag='cond_b')
+            ))
+
+        # Subset the outputs of the tophat steps to obtain only the bam (alignment)
+        # files. Then combine the collections.
         align_a = util.match(th_a, {'file_type': 'bam'})
         align_b = util.match(th_b, {'file_type': 'bam'})
         align = util.combine(p, (align_a, align_b))
 
-        # # For each set of reads, perform a transcriptome assembly with cufflinks,
-        # # yielding one gtf feature annotation for each input read set.
-        cl = (align | task.ContainerTaskRunner(ops.Cufflinks(args=args)))
+        # For each set of reads, perform a transcriptome assembly with cufflinks,
+        # yielding one gtf feature annotation for each input read set.
+        cl = (align | task.ContainerTaskRunner(
+            ops.Cufflinks(args=args)
+            ))
 
-        # # Perform a single `cuffmerge` operation to merge all of the gene
-        # # annotations into a single annotation.
-        cm = (cl | task.ContainerTaskRunner(ops.CuffMerge(args=args)))
+        # Perform a single `cuffmerge` operation to merge all of the gene
+        # annotations into a single annotation.
+        cm = (util.match(cl, {'file_type': 'transcripts.gtf'})
+              | task.ContainerTaskRunner(
+                  ops.CuffMerge(args=args,
+                                ref_fasta=args.ref_fasta,
+                                genes_gtf=args.genes_gtf)
+                  ))
 
-        # # Run a single cuffdiff operation comparing the prevalence of features in
-        # # the input annotatio across conditions using reads obtained for those
-        # # conditions.
-        cd = (cm | task.ContainerTaskRunner(ops.CuffDiff(args=args)))
+        # Run a single cuffdiff operation comparing the prevalence of features in
+        # the input annotatio across conditions using reads obtained for those
+        # conditions.
+        cd = (util.match(cm, {'file_type': 'gtf'})
+              | task.ContainerTaskRunner(
+                  ops.CuffDiff(args=args,
+                               ref_fasta=args.ref_fasta,
+                               genes_gtf=args.genes_gtf,
+                               cond_a_bams=align_a,
+                               cond_b_bams=align_b)
+                  ))
 
         return cd
 

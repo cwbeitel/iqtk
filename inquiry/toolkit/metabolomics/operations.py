@@ -19,6 +19,7 @@ import datetime
 import pprint
 
 import inquiry.framework as iqf
+from inquiry.framework.util import localize
 
 
 def msconvert(p, args):
@@ -60,8 +61,9 @@ class MSConvert(iqf.task.ContainerTask):
                    "-o", self.out_path])
         cmd.chain(["mv", self.out_path + "/*.mzML", converted_target])
 
-        yield self.submit(cmd, inputs=[file_path],
-                          expected_outputs=[{'name': 'converted.mzML'}])
+        yield self.submit(cmd.txt, inputs=[file_path],
+                          expected_outputs=[{'name': 'converted.mzML',
+                                             'file_type': 'mzml'}])
 
 
 def xcms_preprocess(p, args):

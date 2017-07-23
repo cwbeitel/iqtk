@@ -18,28 +18,7 @@ import logging
 from inquiry.framework import task
 from inquiry.framework import util
 from inquiry.framework.util import localize
-
-
-# def tophat(p, args):
-#     return p | task.ContainerTaskRunner(TopHat(args=args))
-#
-#         th_a = ops.tophat(reads_a,
-#                           ref_fasta=args.ref_fasta,
-#                           args=args,
-#                           genes_gtf=args.genes_gtf,
-#                           tag='cond_b')
-#
-# def cufflinks(p, args):
-#     return p | task.ContainerTaskRunner(Cufflinks(args=args))
-#
-#
-# def cuffmerge(p, args):
-#     return p | task.ContainerTaskRunner(CuffMerge(args=args))
-#
-#
-# def cuffdiff(p, args):
-#     return p | task.ContainerTaskRunner(CuffDiff(args=args))
-#
+from inquiry.framework.util import localize_set
 
 
 class TopHat(task.ContainerTask):
@@ -83,7 +62,8 @@ class TopHat(task.ContainerTask):
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/tophat:0.0.1')
-        super(TopHat, self).__init__(task_label='tophat', args=args,
+        super(TopHat, self).__init__(task_label='tophat',
+                                     args=args,
                                      container=container)
 
     def process(self, read_pair):
@@ -115,17 +95,17 @@ class TopHat(task.ContainerTask):
 
         yield self.submit(cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'accepted_hits.bam',
-                                             'type': 'bam'},
+                                             'file_type': 'bam'},
                                             {'name': 'align_summary.txt',
-                                             'type': 'txt'},
+                                             'file_type': 'txt'},
                                             {'name': 'deletions.bed',
-                                             'type': 'bed'},
+                                             'file_type': 'bed'},
                                             {'name': 'insertions.bed',
-                                             'type': 'bed'},
+                                             'file_type': 'bed'},
                                             {'name': 'junctions.bed',
-                                             'type': 'bed'},
+                                             'file_type': 'bed'},
                                             {'name': 'prep_reads.info',
-                                             'type': 'info'}])
+                                             'file_type': 'info'}])
 
 
 class Cufflinks(task.ContainerTask):
@@ -157,25 +137,28 @@ class Cufflinks(task.ContainerTask):
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(Cufflinks, self).__init__(task_label='cufflinks', args=args,
+        super(Cufflinks, self).__init__(task_label='cufflinks',
+                                        args=args,
                                         container=container)
 
     def process(self, file_path):
 
-        cmd = Command(['cufflinks',
+        cmd = util.Command(['cufflinks',
                        '-p', self.container.cpu_cores,
-                       '-o', out_path,
+                       '-o', self.out_path,
                        util.localize(file_path)])
 
-        yield self.submit(cmd, inputs=[file_path],
+        inputs = list(set().union(file_path))
+
+        yield self.submit(cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'genes.fpkm_tracking',
-                                             'type': 'fpkm'},
+                                             'file_type': 'fpkm'},
                                             {'name': 'genes.fpkm_tracking',
-                                             'type': 'fpkm'},
+                                             'file_type': 'fpkm'},
                                             {'name': 'skipped.gtf',
-                                             'type': 'skipped.gtf'},
+                                             'file_type': 'skipped.gtf'},
                                             {'name': 'transcripts.gtf',
-                                             'type': 'transcripts.gtf'},])
+                                             'file_type': 'transcripts.gtf'}])
 
 class CuffMerge(task.ContainerTask):
     """Run CuffMerge
@@ -209,36 +192,40 @@ class CuffMerge(task.ContainerTask):
        https://cole-trapnell-lab.github.io/cufflinks/cuffmerge/
     """
 
-    def __init__(self, args):
+    def __init__(self, args, ref_fasta, genes_gtf):
         """Initialize a containerized task."""
+        self.ref_fasta = ref_fasta
+        self.genes_gtf = genes_gtf
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(CuffMerge, self).__init__(task_label='cuffmerge', args=args,
+        super(CuffMerge, self).__init__(task_label='cuffmerge',
+                                        args=args,
                                         container=container)
 
-    def process(self, file_path):
+    def process(self, assemblies):
 
-        assemblies_txt = '/mnt/data/output/assemblies.txt'
+        assemblies_txt = '%s/assemblies.txt' % self.out_path
 
-        cmd = Command(['cp', localize(ref_fasta), '/mnt/data/output/'])
+        cmd = util.Command(['cp', localize(self.ref_fasta), self.out_path])
+
+        inputs = list(set().union([self.genes_gtf, self.ref_fasta]))
 
         for assembly in assemblies:
             cmd.chain(['echo', localize(assembly), '>>',
                                    assemblies_txt])
-            cmd.chain([cmd1, cmd1_part])
             inputs.extend([assembly])
 
         cmd.chain(['cuffmerge',
-                   '-g', localize(genes_gtf),
-                   '-s', localize(ref_fasta, local_stem='/mnt/data/output'),
+                   '-g', localize(self.genes_gtf),
+                   '-s', localize(self.ref_fasta, local_stem=self.out_path),
                    '-p', 8,
-                   '-o', '/mnt/data/output',
-                   '/mnt/data/output/assemblies.txt'])
+                   '-o', self.out_path,
+                   assemblies_txt])
 
-        yield self.submit(cmd, inputs=[genes_gtf, ref_fasta],
+        yield self.submit(cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'merged.gtf',
-                                             'type': 'gtf'}])
+                                             'file_type': 'gtf'}])
 
 
 class CuffDiff(task.ContainerTask):
@@ -277,33 +264,38 @@ class CuffDiff(task.ContainerTask):
        https://cole-trapnell-lab.github.io/cufflinks/cuffdiff/
     """
 
-    def __init__(self, args):
+    def __init__(self, args, ref_fasta, genes_gtf, cond_a_bams, cond_b_bams):
         """Initialize a containerized task."""
+        self.ref_fasta = ref_fasta
+        self.genes_gtf = genes_gtf
+        self.cond_a_bams = cond_a_bams
+        self.cond_b_bams = cond_b_bams
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/cufflinks:0.0.1')
-        super(CuffDiff, self).__init__(task_label='cuffdiff', args=args,
-                                        container=container)
+        super(CuffDiff, self).__init__(task_label='cuffdiff',
+                                       args=args,
+                                       container=container)
 
     def process(self, file_path):
 
-        cond_a = ','.join(localize_set(cond_a_bams))
-        cond_b = ','.join(localize_set(cond_b_bams))
+        cond_a = ','.join(localize_set(self.cond_a_bams))
+        cond_b = ','.join(localize_set(self.cond_b_bams))
 
-        local_outpath = '/mnt/data/output/'
-
-        cmd = Command(['cp', localize(ref_fasta), '/mnt/data/output/'])
+        cmd = util.Command(['cp', localize(self.ref_fasta), self.out_path])
 
         cmd.chain(['cuffdiff',
-                   '-o', local_outpath,
-                   '-b', localize(ref_fasta, local_stem='/mnt/data/output'),
+                   '-o', self.out_path,
+                   '-b', localize(self.ref_fasta, local_stem=self.out_path),
                    '-p', cpu_cores,
                    '-L', 'C1,C2',
-                   '-u',  localize(genes_gtf),
+                   '-u',  localize(self.genes_gtf),
                    cond_a, cond_b])
 
-        yield self.submit(cmd, inputs=[util.gsutil_expand_stem(ref_fasta),
-                                      cond_a_bams, cond_b_bams, genes_gtf],
+        inputs = [util.gsutil_expand_stem(self.ref_fasta),
+                  self.cond_a_bams, self.cond_b_bams, self.genes_gtf]
+
+        yield self.submit(cmd.txt, inputs=inputs,
                           expected_outputs=[{'genes.count_tracking'},
                                             {'name': 'genes.fpkm_tracking'},
                                             {'name': 'genes.read_group_tracking'},

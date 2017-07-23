@@ -13,6 +13,9 @@
 # ==============================================================================
 
 import inquiry.framework as iq
+from inquiry.framework.util import localize
+from inquiry.framework.util import gsutil_expand_stem
+
 
 def genotype(p, args):
     """Wrapper to simplify use."""
@@ -21,17 +24,20 @@ def genotype(p, args):
 
 class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
 
-    def __init__(self, args):
+    def __init__(self, args, ref_fasta, generate_bam=True, mark_duplicates=True):
         """Initialize a container task."""
+        self.ref_fasta = ref_fasta
+        self.generate_bam = generate_bam
+        self.mark_duplicates = mark_duplicates
         container = iq.task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/aligntools:0.0.1')
         super(CombinedSamtoolsGenotyper, self).__init__(
             task_label='pileup-genotyper', args=args, container=container)
 
-    def process(self, file_path):
+    def process(self, read_pair):
 
-        ref_gs_stem = ref_fasta.split('.fa')[0]
+        ref_gs_stem = self.ref_fasta.split('.fa')[0]
         ref_files = gsutil_expand_stem(ref_gs_stem)
 
         output_raw_bcf = self.out_path + '/var.raw.bcf'
@@ -40,14 +46,14 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         inputs = [read_pair[0], read_pair[1]]
         inputs.extend(ref_files)
 
-        cmd = util.Command(['bwa', 'mem',
-                            '-t', cpu_cores,
-                            localize(ref_fasta),
-                            localize(read_pair[0]),
-                            localize(read_pair[1]),
-                            '>', self.out_path + '/aln.sam'])
+        cmd = iq.util.Command(['bwa', 'mem',
+                               '-t', self.container.cpu_cores,
+                               localize(self.ref_fasta),
+                               localize(read_pair[0]),
+                               localize(read_pair[1]),
+                               '>', self.out_path + '/aln.sam'])
 
-        if generate_bam:
+        if self.generate_bam:
 
             cmd.chain(['samtools', 'view', '-u',
                        self.out_path + '/aln.sam'])
@@ -62,7 +68,7 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         # used in subsequent gentyping will just be this sorted bam.
         bam = self.out_path + '/sorted.bam'
 
-        if mark_duplicates:
+        if self.mark_duplicates:
 
             bam = self.out_path + '/sorted.deduped.bam'
 
@@ -78,7 +84,7 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
                        'METRICS_FILE=%s' % metrics_file,
                        'REMOVE_DUPLICATES=false'])
 
-        cmd.chain(['samtools', 'mpileup', '-uf', localize(ref_fasta), bam])
+        cmd.chain(['samtools', 'mpileup', '-uf', localize(self.ref_fasta), bam])
         cmd.pipe(['bcftools', 'view', '-O', 'b', '-', '>', output_raw_bcf])
 
         cmd.chain(['bcftools', 'view', output_raw_bcf])
@@ -92,18 +98,18 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         cmd.chain(["grep", "-v", "'^##'", output_filt_vcf, ">", vcf_body])
 
         # TODO: So obviously will be refactoring this to be less repetitive.
-        yield self.submit(cmd, inputs=[file_path],
+        yield self.submit(cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'var.flt.vcf.header',
-                                             'type': 'header.vcf'},
+                                             'file_type': 'header.vcf'},
                                             {'name': 'var.flt.vcf.body',
-                                             'type': 'body.vcf'},
+                                             'file_type': 'body.vcf'},
                                             {'name': 'var.flt.vcf',
-                                             'type': 'vcf'},
+                                             'file_type': 'vcf'},
                                             {'name': 'var.raw.bcf',
-                                             'type': 'bcf'},
+                                             'file_type': 'bcf'},
                                             {'name': 'metrics.txt',
-                                             'type': 'metrics.txt'},
+                                             'file_type': 'metrics.txt'},
                                             {'name': 'sorted.deduped.bam',
-                                             'type': 'bam'},
+                                             'file_type': 'bam'},
                                             {'name': 'sorted.deduped.bai',
-                                             'type': 'bai'}])
+                                             'file_type': 'bai'}])

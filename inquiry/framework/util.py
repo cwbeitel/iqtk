@@ -530,13 +530,15 @@ def expect_type(value, t, allow_none=False):
 
 
 def regex_match(value, reg):
-    try:
-        pattern = re.compile(reg)
-    except Exception as e:
-        msg = 'Error while compiling regex: %s' % re
-        logging.error(msg)
-        raise ValueError(msg)
-    return (pattern.match(value) is not None)
+    return (value == reg)  # hack
+    # try:
+    #     pattern = re.compile(reg)
+    # except Exception as e:
+    #     msg = 'Error while compiling regex %s to match value %s' % (reg,
+    #                                                                 value)
+    #     logging.error(msg)
+    #     raise ValueError(msg)
+    # return (pattern.match(value) is not None)
 
 
 class File(object):

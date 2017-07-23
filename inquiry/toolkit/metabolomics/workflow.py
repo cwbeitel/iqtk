@@ -32,12 +32,27 @@ class ConvertWorkflow(Workflow):
                 'help': 'List of paths to compressed Agilent .d files.'
             }
         }
+        self.meta = {
+          "name": "msconvert",
+          "description": "Convert Agilent .d files into mzML.",
+          "parameters": [{
+            "name": "archives",
+            "label": "Archives list file",
+            "help_text": "List of GCS paths to .d files.",
+            "regexes": ["^gs:\/\/[^\n\r]+$"],
+            "is_optional": False
+          }]
+        }
         super(ConvertWorkflow, self).__init__()
 
     def define(self):
         """Metabolome analysis workflow."""
-        return (util.fc_create(self.p, util.create_file_set(self.p, self.args.archives))
+
+        return (util.fc_create(self.p, self.args.archives)
                 | task.ContainerTaskRunner(ops.MSConvert(self.args)))
+
+        # return (util.fc_create(self.p, util.create_file_set(self.p, self.args.archives))
+        #         | task.ContainerTaskRunner(ops.MSConvert(self.args)))
 
 
 # class XCMSPreprocess(Workflow):

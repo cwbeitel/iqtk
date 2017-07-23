@@ -14,8 +14,23 @@
 # ==============================================================================
 set -e
 
-curl -fsSL get.docker.com -o get-docker.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-sh get-docker.sh
+die() {
+  echo $@
+  exit 1
+}
 
-docker pull gcr.io/jbei-cloud/iqtk:latest
+if ! [ -x "$(command -v firebase)" ]; then
+  die "firebase cli utility not found on path, please install `npm install -g firebase-tools`."
+fi
+
+cd ${SCRIPT_DIR}
+
+if [ -x "$(firebase use --add discover-iqtk)" ]; then
+  die "Before running the 'discover.iqtk.io' deploy script you must run 'firebase login' for the account authenticated to deploy to 'discover-iqtk'."
+fi
+
+sh ${SCRIPT_DIR}/stage_assets.sh
+
+firebase deploy

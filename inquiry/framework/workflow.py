@@ -65,31 +65,6 @@ class Workflow(object):
             return gcp.verify_workflow_outputs(self.args.output,
                                                test_case['expected'])
 
-
-# class SingleInputWrapperWorkflow(Workflow):
-#
-#     def __init__(self, operation):
-#         self.operation = operation
-#         self.tag = 'test-operation-%s' % operation.__name__
-#         self.arg_template = {
-#             'single_input': {'help': 'a single input file'}
-#         }
-#         super(SingleInputWrapperWorkflow, self).__init__()
-#
-#     def define(self):
-#         return (util.fc_create(self.p, self.args.single_input) |
-#                 task.ContainerTaskRunner(self.operation(args=self.args)))
-#
-#
-# def op_wrapper_factory(operation):
-#
-#     class Wrapper(SingleInputWrapperWorkflow):
-#         def __init__(self):
-#             super(Wrapper, self).__init__(operation=operation)
-#
-#     return Wrapper
-
-
 def load_config(config_path):
     with open(config_path, 'r') as f:
         config = json.load(f)
@@ -113,19 +88,11 @@ def apply_config(args, config):
         util.logging.debug('loaded config: %s' % config)
         config = load_config(config)
 
-    # logging.debug('args before applying config:')
-    # pp = pprint.PrettyPrinter(indent=2)
-    # logging.debug(pp.pprint(vars(args)))
-
     for k, v in config.items():
         if hasattr(args, k):
             setattr(args, k, v)
         else:
             util.logging.debug('saw config with key not known to existing args')
-
-    # logging.debug('args after applying config:')
-    # pp = pprint.PrettyPrinter(indent=2)
-    # logging.debug(pp.pprint(vars(args)))
 
     return args
 
