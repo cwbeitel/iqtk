@@ -16,8 +16,7 @@ py_library(
       '//inquiry/toolkit/alignment:workflow',
       '//inquiry/toolkit/genotyper_gatk:workflow',
       '//inquiry/toolkit/rna_quantification:workflow',
-      '//inquiry/toolkit/metabolomics:workflow',
-      '//inquiry/toolkit/trigger_tester:workflow'
+      '//inquiry/toolkit/metabolomics:workflow'
     ],
     visibility = ["//visibility:public"],
 )

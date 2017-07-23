@@ -12,7 +12,7 @@ tracking requests and bugs.**
 
 ** Please stay tuned for the alpha version which will be needing testers and feedback **
 
-# Check out the full documentation at <b><a href="http://iqtk.io">iqtk.io</a></b>
+<h1>Check out the full documentation at <b><a href="http://iqtk.io">iqtk.io</a></b></h1>
 
 ## Getting started
 
