@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: iqtk-service
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: iqtk
+        tier: iqtk-service
+    spec:
+      containers:
+      - name: iqtk-service
+        image: quay.io/iqtk/iqtk:0.0.1
+        resources:
+          requests:
+            cpu: 100m
+            memory: 100Mi

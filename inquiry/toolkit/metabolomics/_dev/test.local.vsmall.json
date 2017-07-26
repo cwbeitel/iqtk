@@ -1,10 +1,11 @@
 {
   "local": true,
+  "cloud": false,
   "debug": true,
   "_meta": {
     "workflow": "core:metabolomics"
   },
   "archives": [
-    "gs://inquiry-test/tests/toolkit-ms/file.d"
+    "/tmp/iq/data/f01.d.tgz"
    ]
 }

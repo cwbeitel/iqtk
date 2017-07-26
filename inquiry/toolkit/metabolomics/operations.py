@@ -21,6 +21,8 @@ import pprint
 import inquiry.framework as iqf
 from inquiry.framework.util import localize
 
+from inquiry.framework import task
+
 
 def msconvert(p, args):
     """Wrapper to simplify use."""
@@ -44,8 +46,8 @@ class MSConvert(iqf.task.ContainerTask):
 
         # Declare intermediates
         decomp_target = self.out_path + '/decompressed'
-        converted_target = localize('converted-%s.mzML' % iqf.util.shaker.shake(),
-                                    self.out_path)
+        converted_name = 'converted-%s.mzML' % iqf.util.shaker.shake()
+        converted_target = localize(converted_name, self.out_path)
 
         # Construct command
         cmd = iqf.util.Command(['mkdir', '-p', decomp_target])
@@ -53,16 +55,16 @@ class MSConvert(iqf.task.ContainerTask):
         if file_path.endswith('.tar.gz') or file_path.endswith('.tgz'):
             cmd.chain(['tar', '-xzf', localize(file_path),
                        '-C', decomp_target, '--strip-components=1'])
+            target = decomp_target
+        else:
+            target = localize(file_path)
 
-        cmd.chain(["wine", "msconvert", decomp_target, "--zlib",
-                   # "--filter", "'peakPicking true 1-'",
-                   # "--filter", "'zeroSamples removeExtra'",
-                   # "--32", "--mz64", "--filter", '"peakPicking true 1-"',
+        cmd.chain(["wine", "msconvert", target, "--zlib",
                    "-o", self.out_path])
         cmd.chain(["mv", self.out_path + "/*.mzML", converted_target])
 
-        yield self.submit(cmd.txt, inputs=[file_path],
-                          expected_outputs=[{'name': 'converted.mzML',
+        yield task.submit(self, cmd.txt, inputs=[file_path],
+                          expected_outputs=[{'name': converted_name,
                                              'file_type': 'mzml'}])
 
 
@@ -137,5 +139,5 @@ proc.time()
                               'input_path': self.input_path
                           }))
 
-        yield self.submit(rscript.txt, inputs=file_paths,
+        yield task.submit(self, rscript.txt, inputs=file_paths,
                           expected_outputs=[{'name': '*.png'}])

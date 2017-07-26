@@ -52,7 +52,6 @@ def declare_outputs(output_dir, templates):
 
 
 class ContainerTaskResources(object):
-
     def __init__(self, image='ubuntu:16.04', cpu_cores=2, disk=20,
                  ram=2):
         self.cpu_cores = cpu_cores
@@ -72,7 +71,6 @@ def construct_outdir(output_dir_arg, label, tag):
 
 
 class ContainerTask(beam.DoFn):
-
     def __init__(self, task_label, args, container, task_tag=None,
                  out_path='/mnt/data/output', input_path='/mnt/data/input'):
         self.task_label = task_label
@@ -81,97 +79,118 @@ class ContainerTask(beam.DoFn):
         self.out_path = out_path
         self.input_path = input_path
 
-    def wrap_command(self, command):
-        """Wrap command with pre and post steps."""
 
-        # pre = Command([
-        # 'set', '-e'
-        # ])
-        # pre.chain([
-        # 'finish()', '{if', '(($?!= 0));', 'then',
-        # 'echo', '"run did not finish successfully."', 'fi'
-        # ])
-        # pre.chain([
-        # 'trap', 'finish', 'EXIT'
-        # ])
-        # pre.chain([
-        # 'mkdir', '-p', '/mnt/data/output'
-        # ])
+def _outputs_from_template(templates, output_dir):
 
-        # These can probably be performed by the attached sync/logging VM.
-        pre = util.Command([
-            'mkdir', '-p', '/mnt/data/output'
-        ])
-        pre.chain([
-            'mkdir', '-p', '/mnt/data/input'
-        ])
+    out = []
+    for template in templates:
 
-        cmd = util.Command()
-        cmd.txt = str(command) # hack...
-        pre.chain_command(cmd)
-        #command.prepend_command(pre)
+        file_type = None if 'file_type' not in template else template['file_type']
 
-        post = util.Command([
-            # TODO: There are some failure cases here.
-        "echo", "'", cmd.txt, "'", ">", self.out_path + "/log.txt"
-        ])
-        post.chain([
-        'echo', '"run finished successfully."'
-        ])
+        out.append(util.File(remote_path=util.localize(template['name'],
+                                                       output_dir),
+                        file_type=file_type))
 
-        #command.chain_command(post)
-        pre.chain_command(post)
+    return out
 
-        return pre
 
-    def post(self, command):
-        command.log_self(self.out_path)
-        command.chain(['echo', '"run finished successfully."'])
+def wrap_task_command(task, command):
+    """Wrap command with pre and post steps."""
 
-    def submit(self, command, inputs=[], tag='',
-               expect=[], dry_run=None, expected_outputs=[]):
-        command = self.wrap_command(command)
+    # These can probably be performed by the attached sync/logging VM.
+    pre = util.Command([
+        'mkdir', '-p', '/mnt/data/output'
+    ])
+    pre.chain([
+        'mkdir', '-p', '/mnt/data/input'
+    ])
 
-        logging.info('executing command: %s' % command.txt)
+    cmd = util.Command()
+    cmd.txt = str(command)
+    pre.chain_command(cmd)
 
-        if hasattr(self.args, 'dry_run') and self.args.dry_run:
-            dry_run = True
+    post = util.Command([
+        # TODO: There are some failure cases here.
+    "echo", "'", cmd.txt, "'", ">", task.out_path + "/log.txt"
+    ])
+    post.chain([
+    'echo', '"run finished successfully."'
+    ])
 
-        output_dir = construct_outdir(self.args.output_dir, self.task_label, tag)
+    pre.chain_command(post)
+    return pre
 
-        job_spec = {
-            'input_files': inputs, 'log_output_path': output_dir,
-            'disk_size': self.container.disk, 'min_ram': self.container.ram, 'command': command.txt,
-            'project_id': self.args.project, 'runtime_image': self.container.image, 'job_args': {},
-            'job_name': self.args.job_name, 'region': 'us-central1-f',
-            'dry_run': dry_run, 'output_dir': output_dir, 'cpu_cores': self.container.cpu_cores,
-            'timeout': datetime.timedelta(hours=3)
-        }
 
-        pp = pprint.PrettyPrinter(indent=2)
-        logging.debug(pp.pprint(job_spec))
+class Provider(object):
+    def __init__(self, provider_string):
+        # Todo: validation, obviously
+        arr = provider_string.split(':')
+        self.name = arr[0]
+        self.region = arr[1]
 
-        if hasattr(self.args, 'local') and self.args.local:
-            response = local.local_run(**job_spec)
-        else:
-            response = gcp.run(**job_spec)
 
-        response['output_files'] = self._outputs_from_template(
-            expected_outputs, output_dir)
+class JobSpec(object):
+    def __init__(self, inputs, output_dir, command, container, args,
+                 timeout=datetime.timedelta(hours=3),
+                 dry_run=False, provider="gcp:us-central1-f"):
+        self.input_files = inputs
+        self.log_output_path = output_dir
+        self.disk_size = container.disk
+        self.min_ram = container.ram
+        self.command = command.txt
+        self.runtime_image = container.image
+        self.job_args = {}
+        self.project_id = args.project
+        self.job_name = args.job_name
 
-        logging.debug(pp.pprint(response))
+        provider = Provider(provider)
+        self.region = provider.region
 
-        return response
+        self.output_dir = output_dir
+        self.cpu_cores = container.cpu_cores
+        self.timeout = timeout
+        self.dry_run = dry_run
 
-    def _outputs_from_template(self, templates, output_dir):
 
-        out = []
-        for template in templates:
+def _construct_job_spec(task, command, inputs=[], tag='',
+                        expect=[], dry_run=None, expected_outputs=[]):
+    command = wrap_task_command(task, command)
 
-            file_type = None if 'file_type' not in template else template['file_type']
+    logging.info('executing command: %s' % command.txt)
 
-            out.append(util.File(remote_path=util.localize(template['name'],
-                                                           output_dir),
-                            file_type=file_type))
+    if hasattr(task.args, 'dry_run') and task.args.dry_run:
+        dry_run = True
+    else:
+        dry_run = False
 
-        return out
+    output_dir = construct_outdir(task.args.output_dir,
+                                  task.task_label, tag)
+
+    job_spec = JobSpec(inputs, output_dir, command, task.container, task.args,
+                       dry_run)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    logging.debug(pp.pprint(job_spec.__dict__))
+
+    return job_spec
+
+
+def submit(task, command, inputs=[], tag='',
+           expect=[], dry_run=None, expected_outputs=[]):
+
+    task.job_spec = _construct_job_spec(task, command, inputs, tag,
+                                        expect, dry_run,
+                                        expected_outputs)
+
+    if hasattr(task.args, 'local') and task.args.local:
+        response = local.local_run(**task.job_spec.__dict__)
+    else:
+        response = gcp.run(**task.job_spec.__dict__)
+
+    response['output_files'] = _outputs_from_template(expected_outputs,
+                                                      task.job_spec.output_dir)
+
+    pp = pprint.PrettyPrinter(indent=2)
+    logging.debug(pp.pprint(response))
+
+    return response

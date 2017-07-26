@@ -18,85 +18,71 @@ from __future__ import division
 from __future__ import print_function
 
 import json
-
 import apache_beam as beam
-
+import logging
 from apache_beam.io import ReadFromText
-
-#from apache_beam.utils.pipeline_options import GoogleCloudOptions
-from apache_beam.io.gcp.internal.clients import bigquery
-
+# from apache_beam.io.gcp.internal.clients import bigquery
 from google.protobuf.json_format import MessageToDict
+from google.cloud import bigquery
+import uuid
+import time
 
 
-class WriteToBigQuery(beam.PTransform):
-    """Generate, format, and write BigQuery table row information.
-    """
-    def __init__(self, table_name, schema, dataset='demonstration'):
-        """Initializes the transform.
-        Args:
-            table_name (str): Name of the BigQuery table to use.
-            dataset (str): Name of the dataset to use.
-            schema (beam.bigquery.TableSchema): A BigQuery schema object.
-        """
-        super(WriteToBigQuery, self).__init__()
+class BQUpload(beam.DoFn):
+
+    def __init__(self, schema, dataset_name, table_name):
+        self.dataset_name = dataset_name
         self.table_name = table_name
-        self.dataset = dataset
         self.schema = schema
 
-    def get_table(self, pipeline):
-        """Utility to construct an output table reference."""
-        project = 'jbei-cloud'  # HACK
-        #project = pipeline.options.view_as(GoogleCloudOptions).project
-        return '%s:%s.%s' % (project, self.dataset, self.table_name)
+    def process(self, f):
 
-    def row_fn(self, pcoll):
-        pass
-
-    def expand(self, pcoll):
-        table = self.get_table(pcoll.pipeline)
-        rows = self.row_fn(pcoll)
-        return (
-            rows
-            | beam.io.Write(beam.io.BigQuerySink(
-                table,
-                schema=self.schema,
-                create_disposition=beam.io.BigQueryDisposition.CREATE_IF_NEEDED,
-                write_disposition=beam.io.BigQueryDisposition.WRITE_APPEND)))
+        load_data_from_gcs(self.dataset_name, self.table_name,
+                           f[0].remote_path, self.schema)
 
 
-def build_schema(json_schema_string):
-    """Builds a BigQuery schema object for beam.io.BigQuerySink from JSON.
+def load_data_from_gcs(dataset_name, table_name, source, schema):
+    client = bigquery.Client()
 
-    Suppose you have a bunch of schemas represented in Protobufs and you want
-    to use these schemas for some BigQuery tables. We have the solution! Our
-    special brand of build_schema() can generate that BigQuerySink()-compatible
-    schema that you've been hoping for. No more doing it by hand!
+    logging.info('loading data from GCS: %s' % source)
+    logging.info('loading data to bigquery table: %s:%s' % (dataset_name,
+                                                            table_name))
 
-    Args:
-        json_schema_string (str): A string dump of a JSON object representing a
-            BigQuery schema.
+    dataset = client.dataset(dataset_name)
+    if not dataset.exists():
+        logging.info('dataset does not exist, creating')
+        dataset.create()
+    else:
+        logging.info('dataset exists, skipping creation')
 
-    Returns:
-        bigquery.TableSchema: A beam.io.BigQuerySink-compatible schema object.
-    """
-    d = json.loads(json_schema_string)
-    return bigquery.TableSchema(fields=_build_field(d))
+    table = dataset.table(table_name, schema)
+    if not table.exists():
+        logging.info('table does not exist, creating')
+        table.create()
+    else:
+        logging.info('table exists, skipping creation')
+
+    job_name = str(uuid.uuid4())
+
+    job = bigquery.job.LoadTableFromStorageJob(name=job_name,
+                                               destination=table,
+                                               source_uris=[source],
+                                               client=client, schema=schema)
+
+    job.begin()
+    logging.info('started job, polling for completion')
+    _wait_for_job(job)
+    logging.info('bq upload job complete')
+
+    print('Loaded {} rows into {}:{}.'.format(
+        job.output_rows, dataset_name, table_name))
 
 
-def _build_field(field_array):
-    """Recursive worker for build_schema()."""
-    ret_fields = []
-
-    for thing in field_array:
-
-        if 'fields' in thing:
-            fields = _build_field(thing['fields'])
-            thing['fields'] = fields
-        ret_fields.append(bigquery.TableFieldSchema(**thing))
-
-    return ret_fields
-
-
-def get_schema():
-    return ', '.join(['%s:%s' % (s['name'], s['type']) for s in SCHEMA])
+def _wait_for_job(job):
+    while True:
+        job.reload()
+        if job.state == 'DONE':
+            if job.error_result:
+                raise RuntimeError(job.errors)
+            return
+        time.sleep(1)

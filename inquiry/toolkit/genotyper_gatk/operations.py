@@ -15,12 +15,9 @@
 import inquiry.framework as iq
 from inquiry.framework.util import localize
 from inquiry.framework.util import gsutil_expand_stem
-
-
-def genotype(p, args):
-    """Wrapper to simplify use."""
-    return p | task.ContainerTaskRunner(CombinedSamtoolsGenotyper(args=args))
-
+from google.cloud.bigquery import SchemaField
+from inquiry.framework import task
+from inquiry.framework import bq
 
 class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
 
@@ -98,7 +95,7 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         cmd.chain(["grep", "-v", "'^##'", output_filt_vcf, ">", vcf_body])
 
         # TODO: So obviously will be refactoring this to be less repetitive.
-        yield self.submit(cmd.txt, inputs=inputs,
+        yield task.submit(self, cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'var.flt.vcf.header',
                                              'file_type': 'header.vcf'},
                                             {'name': 'var.flt.vcf.body',
@@ -113,3 +110,22 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
                                              'file_type': 'bam'},
                                             {'name': 'sorted.deduped.bai',
                                              'file_type': 'bai'}])
+
+
+class GenotypeBQUpload(bq.BQUpload):
+
+    def __init__(self, dataset_name, table_name):
+
+        SCHEMA = [
+            SchemaField('id', 'STRING', mode='required'),
+            SchemaField('refname', 'STRING', mode='required'),
+            SchemaField('start', 'INTEGER', mode='required'),
+            SchemaField('refbases', 'STRING', mode='required'),
+            SchemaField('altbases', 'STRING', mode='required'),
+            SchemaField('quality', 'FLOAT', mode='required'),
+            SchemaField('filter', 'STRING', mode='required'),
+            SchemaField('info', 'STRING', mode='required'),
+            SchemaField('format', 'STRING', mode='required')
+        ]
+
+        super(GenotypeBQUpload, self).__init__(SCHEMA, dataset_name, table_name)

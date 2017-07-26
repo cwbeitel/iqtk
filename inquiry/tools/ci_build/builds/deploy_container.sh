@@ -34,6 +34,11 @@ fi
 
 docker login -u ${QUAY_IO_IQTK_UNAME} -p ${QUAY_IO_IQTK_PASSWORD} -e ${QUAY_IO_IQTK_EMAIL} quay.io
 
-docker tag ${BUILD_TAG} quay.io/iqtk/${BUILD_TAG}
+DEPLOY_TAG=quay.io/iqtk/${BUILD_TAG}
+if [[ -z "${CIRCLE_SHA1}" ]]; then
+  DEPLOY_TAG=${DEPLOY_TAG}-${CIRCLE_SHA1}
+fi
 
-docker push quay.io/iqtk/${BUILD_TAG}
+docker tag ${BUILD_TAG} ${DEPLOY_TAG}
+
+docker push ${DEPLOY_TAG}

@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 
 from apache_beam.pvalue import AsList
+import apache_beam as beam
 
 import inquiry.toolkit.rna_quantification.operations as ops
 from inquiry.framework.workflow import Workflow
@@ -41,39 +42,13 @@ class TranscriptomicsWorkflow(Workflow):
             },
             'cond_b_pairs': {
                 'help': 'read pairs for condition b'
+            },
+            'bq_dataset_name': {
+                'help': 'the name of a bigquery dataset'
+            },
+            'bq_table_name': {
+                'help': 'the name of a bigquery table'
             }
-        }
-        self.meta = {
-          "name": "rna_quantification",
-          "description": "Use the tuxedo transcriptome analysis suite to obtain differential transcript expression levels for an RNA-seq dataset.",
-          "parameters": [{
-            "name": "ref_fasta",
-            "label": "Reference FASTA",
-            "help_text": "A reference genome assembly in FASTA format aginst which to align reads.",
-            "regexes": ["^gs:\/\/[^\n\r]+$"],
-            "is_optional": False
-          },
-          {
-            "name": "genes_gtf",
-            "label": "Genes GTF",
-            "help_text": "Reference genes annotation in GTF format.",
-            "regexes": ["^gs:\/\/[^\n\r]+$"],
-            "is_optional": False
-          },
-          {
-            "name": "cond_a_pairs",
-            "label": "Condition A read pairs",
-            "help_text": "A comma-separated list of read pairs belonging to condition A.",
-            "regexes": ["^gs:\/\/[^\n\r]+$"],
-            "is_optional": False
-          },
-          {
-            "name": "cond_b_pairs",
-            "label": "Condition B read pairs",
-            "help_text": "A comma-separated list of read pairs belonging to condition B.",
-            "regexes": ["^gs:\/\/[^\n\r]+$"],
-            "is_optional": False
-          }]
         }
 
         super(TranscriptomicsWorkflow, self).__init__()
@@ -132,7 +107,7 @@ class TranscriptomicsWorkflow(Workflow):
 
         # Perform a single `cuffmerge` operation to merge all of the gene
         # annotations into a single annotation.
-        cm = (util.match(cl, {'file_type': 'transcripts.gtf'})
+        cm = (util.union(util.match(cl, {'file_type': 'transcripts.gtf'}))
               | task.ContainerTaskRunner(
                   ops.CuffMerge(args=args,
                                 ref_fasta=args.ref_fasta,
@@ -142,14 +117,16 @@ class TranscriptomicsWorkflow(Workflow):
         # Run a single cuffdiff operation comparing the prevalence of features in
         # the input annotatio across conditions using reads obtained for those
         # conditions.
-        cd = (util.match(cm, {'file_type': 'gtf'})
-              | task.ContainerTaskRunner(
-                  ops.CuffDiff(args=args,
-                               ref_fasta=args.ref_fasta,
-                               genes_gtf=args.genes_gtf,
-                               cond_a_bams=align_a,
-                               cond_b_bams=align_b)
-                  ))
+        cd = ops.cuffdiff(util.match(cm, {'file_type': 'gtf'}),
+                          ref_fasta=args.ref_fasta,
+                          args=args,
+                          cond_a_bams=AsList(align_a),
+                          cond_b_bams=AsList(align_b))
+
+        # (util.match(cd, {'file_type': 'differentialExpressionCSV'})
+        # | 'bq-upload' >> beam.ParDo(
+        #      ops.DiffExBQUpload(args.bq_dataset_name, args.bq_table_name)
+        #      ))
 
         return cd
 

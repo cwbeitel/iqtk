@@ -38,6 +38,11 @@ def pipelines_service():
     service = discovery.build('genomics', 'v1alpha2', credentials=credentials)
     return service
 
+def _prepare_input_file_list(files):
+    for i, f in enumerate(files):
+        if isinstance(files[i], util.File):
+            files[i] = files[i].remote_path
+    return files
 
 def run(polling_interval=4,
         input_files=None,
@@ -65,6 +70,8 @@ def run(polling_interval=4,
 
     """
     service = pipelines_service()
+
+    input_files = _prepare_input_file_list(input_files)
 
     job_body = {
       'ephemeralPipeline': {
@@ -124,7 +131,7 @@ def run(polling_interval=4,
 
     # logging.debug('printing job body...')
     # pp = pprint.PrettyPrinter(indent=2)
-    # logging.info(pp.pprint(job_body))
+    logging.info(job_body)
 
     job = service.pipelines().run(body=job_body)
 
@@ -152,6 +159,8 @@ def poll_until_complete(op, interval=4):
         op = service.operations().get(name=op['name']).execute()
 
     logging.debug('Operation complete')
+
+    time.sleep(30)
 
     yield op
 

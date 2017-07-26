@@ -22,7 +22,7 @@ import sys
 from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
-_VERSION = '0.0.5'
+_VERSION = '0.0.3'
 
 REQUIRED_PACKAGES = [
     "google-cloud-pubsub",

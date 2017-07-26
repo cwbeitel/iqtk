@@ -180,6 +180,13 @@ def write_dev(data, output, tag):
     data | 'write_%s' % tag >> beam.io.WriteToText(output + '/' + tag)
 
 
+def write(data, output, tag):
+    """Write text to output stem with tag."""
+    out_path = output + '/' + tag
+    data | 'write_%s' % tag >> beam.io.WriteToText(out_path)
+    return out_path
+
+
 def hash_lookup(record, h):
     """Map record:(key, value0), hash:(key, value1) to (value1, value0)."""
     if record[0] in h:
@@ -559,6 +566,9 @@ class File(object):
         self.local_path = local_path
         if template is not None:
             self.update(template)
+
+    def __str__(self):
+        return self.remote_path
 
     def as_dict(self):
         """Convert a File object into a dictionary.
