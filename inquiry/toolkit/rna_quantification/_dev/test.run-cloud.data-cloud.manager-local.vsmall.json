@@ -1,6 +1,6 @@
 {
-  "dry_run": false,
-  "cloud": true,
+  "dry_run": true,
+  "cloud": false,
   "local": false,
   "_meta": {
     "workflow": "core:expression"

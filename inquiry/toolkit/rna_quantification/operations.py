@@ -39,9 +39,21 @@ class TopHat(task.ContainerTask):
 
     def process(self, read_pair):
 
+        prefix = task.Prefixer()
+
         ref_local_stem = localize(self.ref_fasta).split('.')[0]
         ref_gs_stem = self.ref_fasta.split('.fa')[0]
         ref_files = util.gsutil_expand_stem(ref_gs_stem)
+
+        genes_gtf = localize(self.genes_gtf)
+        read_1 = localize(read_pair[0])
+        read_2 = localize(read_pair[1])
+
+        output_bam = localize('accepted_hits.bam', self.out_path)
+        align_summary = localize('align_summary.txt', self.out_path)
+        deletions_bed = localize('junctions.bed', self.out_path)
+        insertions_bed = localize('junctions.bed', self.out_path)
+        junctions_bed = localize('junctions.bed', self.out_path)
 
         inputs = list(set().union([self.genes_gtf, read_pair[0], read_pair[1]],
                                   ref_files))
@@ -58,14 +70,18 @@ class TopHat(task.ContainerTask):
 
         cmd = util.Command(['tophat',
                           '-p', self.container.cpu_cores,
-                          '-G', localize(self.genes_gtf),
+                          '-G', genes_gtf,
                           '-o', self.out_path,
                           ref_local_stem,
-                          localize(read_pair[0]),
-                          localize(read_pair[1])])
+                          read_1,
+                          read_2])
+
+        tmp = output_bam
+        output_bam = prefix.apply(output_bam)
+        cmd.chain(['mv', tmp, output_bam])
 
         yield task.submit(self, cmd.txt, inputs=inputs,
-                          expected_outputs=[{'name': 'accepted_hits.bam',
+                          expected_outputs=[{'name': prefix.apply('accepted_hits.bam'),
                                              'file_type': 'bam'},
                                             {'name': 'align_summary.txt',
                                              'file_type': 'txt'},
@@ -85,7 +101,9 @@ class Cufflinks(task.ContainerTask):
         """Initialize a containerized task."""
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
-            image='gcr.io/jbei-cloud/cufflinks:0.0.2')
+            image='quay.io/iqtk/cufflinks:0.0.3')
+            #image='quay.io/biocontainers/cufflinks')
+            #image='ubuntu:16.04')
             #image='gcr.io/jbei-cloud/cufflinks:0.0.2')
         super(Cufflinks, self).__init__(task_label='cufflinks',
                                         args=args,
@@ -93,14 +111,18 @@ class Cufflinks(task.ContainerTask):
 
     def process(self, file_path):
 
+        #cmd = util.Command(['tree /mnt/data/input'])
+        # cmd = util.Command(['which cufflinks'])
+
         cmd = util.Command(['cufflinks',
                        '-p', self.container.cpu_cores,
                        '-o', self.out_path,
                        util.localize(file_path)])
 
-        cmd.chain(['tree /mnt/data/input'])
+        # cmd.chain(['tree /mnt/data/input'])
 
         inputs = list(set().union(file_path))
+        # inputs = []
 
         yield task.submit(self, cmd.txt, inputs=inputs,
                           expected_outputs=[{'name': 'genes.fpkm_tracking',
@@ -120,7 +142,7 @@ class CuffMerge(task.ContainerTask):
         self.genes_gtf = genes_gtf
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
-            image='gcr.io/jbei-cloud/cufflinks:0.0.2')
+            image='quay.io/iqtk/cufflinks:0.0.3')
         super(CuffMerge, self).__init__(task_label='cuffmerge',
                                         args=args,
                                         container=container)
@@ -155,7 +177,7 @@ class CuffDiff(task.ContainerTask):
         """Initialize a containerized task."""
         container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
-            image='gcr.io/jbei-cloud/cufflinks:0.0.2')
+            image='quay.io/iqtk/cufflinks:0.0.3')
         super(CuffDiff, self).__init__(task_label='cuffdiff',
                                        args=args,
                                        container=container)

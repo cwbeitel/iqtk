@@ -45,6 +45,10 @@ Alternatively, the latest `iqtk` docker image can be obtained as follows:
 docker pull quay.io/iqtk/iqtk
 ```
 
+### GCloud authentication
+
+The environment in which the toolkit is running must have been authenticated to a google cloud account and project (using `gcloud auth login`) that has the Google Genomics Pipelines and DataFlow API's enabled. Also, for the time being you must manually create a bucket with the name `gs://[your-project]-iqtk`.
+
 ### Running a workflow
 
 The core workflows can be run as simply as the following,

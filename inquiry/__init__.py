@@ -21,8 +21,3 @@ __VERSION__ = '0.0.2'
 
 import os
 PROJECT_ROOT_PATH = '/'.join(os.path.dirname(os.path.abspath(__file__)).split('/')[:-1])
-
-#import inquiry.framework
-from inquiry.framework import *
-
-from inquiry.framework.client import Client

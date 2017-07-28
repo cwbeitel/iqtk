@@ -1,0 +1,13 @@
+{
+  "debug": true,
+  "local": true,
+  "cloud": false,
+  "_meta": {
+    "workflow": "core:alignment"
+  },
+  "ref_fasta": "gs://iqtk/dmel/bwa/genome.fa",
+  "reads": [
+    ["gs://iqtk/rnaseq/GSM794483_C1_R1_1_small.fq",
+     "gs://iqtk/rnaseq/GSM794483_C1_R1_2_small.fq"]
+   ]
+}

@@ -166,9 +166,9 @@ def bundle(args):
     from inquiry import __VERSION__ as version
     bundle_name = '%s/inquiry-%s.tar.gz' % (tmpdir, version)
     bundle_sh_path = PROJECT_ROOT_PATH + '/tools/bundle.sh'
-    subprocess.check_call(['sh', bundle_sh_path, tmpdir])
-    # subprocess.check_call(['python', 'setup.py', 'sdist', '--format=gztar',
-    #                        '--dist-dir=%s' % tmpdir])
+    #subprocess.check_call(['sh', bundle_sh_path, tmpdir])
+    subprocess.check_call(['python', 'setup.py', 'sdist', '--format=gztar',
+                            '--dist-dir=%s' % tmpdir])
     subprocess.check_call(['gsutil', '-q', 'cp', os.path.join('dist',
                                                               bundle_name),
                            args.output_dir + '/'])

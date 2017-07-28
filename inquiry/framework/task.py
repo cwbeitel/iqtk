@@ -21,6 +21,7 @@ import apache_beam as beam
 import datetime
 import pprint
 import logging
+import uuid
 
 from inquiry.framework import gcp
 from inquiry.framework import local
@@ -62,7 +63,8 @@ class ContainerTaskResources(object):
 
 # TODO: Duplicated
 def construct_outdir(output_dir_arg, label, tag):
-    salt = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    #salt = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    salt = str(uuid.uuid4())
     output_dir = output_dir_arg + '/' + label + '-'
     if label is not None and tag is not None:
         output_dir += (label + '-')
@@ -79,6 +81,14 @@ class ContainerTask(beam.DoFn):
         self.out_path = out_path
         self.input_path = input_path
 
+
+class Prefixer(object):
+    def __init__(self):
+        self.salt = str(uuid.uuid4())
+    def apply(self, path):
+        arr = path.split('/')
+        arr[-1] = self.salt + '.' + arr[-1]
+        return '/'.join(arr)
 
 def _outputs_from_template(templates, output_dir):
 
@@ -97,6 +107,8 @@ def _outputs_from_template(templates, output_dir):
 def wrap_task_command(task, command):
     """Wrap command with pre and post steps."""
 
+    prefix = Prefixer()
+
     # These can probably be performed by the attached sync/logging VM.
     pre = util.Command([
         'mkdir', '-p', '/mnt/data/output'
@@ -111,7 +123,7 @@ def wrap_task_command(task, command):
 
     post = util.Command([
         # TODO: There are some failure cases here.
-    "echo", "'", cmd.txt, "'", ">", task.out_path + "/log.txt"
+    "echo", "'", cmd.txt, "'", ">", prefix.apply(task.out_path + "/log.txt")
     ])
     post.chain([
     'echo', '"run finished successfully."'
@@ -142,10 +154,8 @@ class JobSpec(object):
         self.job_args = {}
         self.project_id = args.project
         self.job_name = args.job_name
-
         provider = Provider(provider)
         self.region = provider.region
-
         self.output_dir = output_dir
         self.cpu_cores = container.cpu_cores
         self.timeout = timeout

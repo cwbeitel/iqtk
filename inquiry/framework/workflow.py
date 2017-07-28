@@ -22,6 +22,9 @@ import argparse
 from datetime import datetime
 import json
 import os
+import uuid
+import subprocess
+import tempfile
 
 from inquiry.framework import util
 from inquiry.framework import gcp
@@ -39,7 +42,7 @@ class Workflow(object):
         """Override this method in defining child workflows."""
         pass
 
-    def run(self, config, test_case=None):
+    def run(self, config, test_case=None, config_mode='file'):
         """Run the workflow."""
         self.args, pargs = parse_arguments(job_tag=self.tag,
                                            arg_template=self.arg_template,
@@ -175,7 +178,8 @@ def parse_arguments(job_tag, bucket=None, num_workers=5, project=None,
         known_args.bucket = "gs://" + known_args.bucket
     gcp.maybe_create_bucket(known_args.bucket)
 
-    job_name = str(job_tag) + '-' + datetime.now().strftime('%Y%m%d%H%M%S')
+    job_name = (str(job_tag) + '-' + datetime.now().strftime('%Y%m%d%H%M%S')
+                + '-' + str(uuid.uuid4())) # for now unique and sorted
     known_args.job_name = job_name  # TODO
     known_args.job_tag = job_tag
 
@@ -209,10 +213,12 @@ def parse_arguments(job_tag, bucket=None, num_workers=5, project=None,
     #     pargs.extend('--num_workers=%d' % int(known_args.num_workers))
 
     if known_args.cloud:
-        # bundle_path = bundle(known_args)
+        #path = bundle(known_args)
         # pargs.extend(['--extra_package=%s' % bundle_path])
+        #path = make_sdist()
         path = '/Users/cb/Desktop/release/iqtk/pip_test/whl/iqtk-0.0.3-py2-none-any.whl'
-        pargs.extend(['--extra_package=%s' % path])  ## Hack
+        #path = 'gs://iqtk/source/iqtk-0.0.3-py2-none-any.whl'
+        pargs.extend(['--extra_package=%s' % path])
 
     if requirements is not None:
         reqs = util.dump_reqs(requirements)

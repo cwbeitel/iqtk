@@ -19,6 +19,7 @@ import datetime
 import pprint
 
 import inquiry.framework as iqf
+from inquiry.framework import bq
 
 
 def bwa_mem(p, args):
@@ -82,3 +83,24 @@ class BWAMem(iqf.task.ContainerTask):
                           expected_outputs=[{'name': 'sorted.bam', 'type': 'bam'},
                                             {'name': 'aln.sam', 'type': 'sam'},
                                             {'name': 'sorted.deduped.bam', 'type': 'deduped.sam'}])
+
+
+
+class AlignmentBQUpload(bq.BQUpload):
+
+    def __init__(self, dataset_name, table_name):
+
+        SCHEMA = [
+            # SchemaField('refname', 'STRING', mode='required'),
+            # SchemaField('start', 'INTEGER', mode='required'),
+            # SchemaField('id', 'STRING', mode='required'),
+            # SchemaField('refbases', 'STRING', mode='required'),
+            # SchemaField('altbases', 'STRING', mode='required'),
+            # SchemaField('quality', 'FLOAT', mode='required'),
+            # SchemaField('filter', 'STRING', mode='required'),
+            # SchemaField('info', 'STRING', mode='required'),
+            # SchemaField('format', 'STRING', mode='required'),
+            # SchemaField('balance', 'STRING', mode='required')
+        ]
+
+        super(AlignmentBQUpload, self).__init__(SCHEMA, dataset_name, table_name)

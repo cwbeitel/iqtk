@@ -15,13 +15,15 @@
 
 from __future__ import absolute_import
 
+import apache_beam as beam
+
 from . import operations as ops
 from inquiry.framework.workflow import Workflow
 from inquiry.framework import util
 from inquiry.framework import task
 
 
-class GenotypeGATKWorkflow(Workflow):
+class GenotypeSamtoolsWorkflow(Workflow):
 
     def __init__(self):
         """Initialize the workflow."""
@@ -40,7 +42,7 @@ class GenotypeGATKWorkflow(Workflow):
                 'help': 'the name of a bigquery table'
             }
         }
-        super(GenotypeGATKWorkflow, self).__init__()
+        super(GenotypeSamtoolsWorkflow, self).__init__()
 
     def define(self):
         geno = (util.fc_create(self.p, self.args.reads)
@@ -50,10 +52,11 @@ class GenotypeGATKWorkflow(Workflow):
                         self.args.ref_fasta
                         )))
 
-        # (util.match(cd, {'file_type': 'var.flt.vcf'})
-        # | 'bq-upload' >> beam.ParDo(
-        #      ops.GenotypeBQUpload(args.bq_dataset_name, args.bq_table_name)
-        #      ))
+        (util.match(geno, {'file_type': 'VCFBody'})
+        | 'bq-upload' >> beam.ParDo(
+             ops.GenotypeBQUpload(self.args.bq_dataset_name,
+                                  self.args.bq_table_name)
+             ))
 
         return geno
 
@@ -61,7 +64,7 @@ class GenotypeGATKWorkflow(Workflow):
 
 def run(config=None):
     """Run as a Dataflow."""
-    GenotypeGATKWorkflow().run(config)
+    GenotypeSamtoolsWorkflow().run(config)
 
 if __name__ == '__main__':
     run(sys.argv[1])

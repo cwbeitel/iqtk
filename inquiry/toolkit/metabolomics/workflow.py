@@ -51,29 +51,26 @@ class ConvertWorkflow(Workflow):
         return (util.fc_create(self.p, self.args.archives)
                 | task.ContainerTaskRunner(ops.MSConvert(self.args)))
 
-        # return (util.fc_create(self.p, util.create_file_set(self.p, self.args.archives))
-        #         | task.ContainerTaskRunner(ops.MSConvert(self.args)))
 
+class XCMSPreprocess(Workflow):
+    """Convert .d files to mzml and preprocess with XCMS."""
 
-# class XCMSPreprocess(Workflow):
-#     """Convert .d files to mzml and preprocess with XCMS."""
-#
-#     def __init__(self):
-#         """Initialize an msconvert workflow."""
-#         self.tag = 'xcms3-preprocess'
-#         self.arg_template = {
-#             'files': {
-#                 'help': 'List of paths to files.'
-#             }
-#         }
-#         super(XCMSPreprocess, self).__init__()
-#
-#     def define(self, p):
-#         """Metabolome analysis workflow."""
-#         # Hack ... so here we will want to map from a pcollection down
-#         # to a single array.
-#         inputs = util.create_file_set(p, [self.args.files])
-#         return ops.xcms_preprocess(inputs, self.args)
+    def __init__(self):
+        """Initialize an msconvert workflow."""
+        self.tag = 'xcms3-preprocess'
+        self.arg_template = {
+            'files': {
+                'help': 'List of paths to files.'
+            }
+        }
+        super(XCMSPreprocess, self).__init__()
+
+    def define(self, p):
+        """Metabolome analysis workflow."""
+        # Hack ... so here we will want to map from a pcollection down
+        # to a single array.
+        inputs = util.create_file_set(p, [self.args.files])
+        return ops.xcms_preprocess(inputs, self.args)
 
 
 def run(config=None):

@@ -19,6 +19,8 @@ from google.cloud.bigquery import SchemaField
 from inquiry.framework import task
 from inquiry.framework import bq
 
+
+
 class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
 
     def __init__(self, args, ref_fasta, generate_bam=True, mark_duplicates=True):
@@ -34,54 +36,70 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
 
     def process(self, read_pair):
 
+        prefix = task.Prefixer()
+
+        local_read_1 = localize(read_pair[0])
+        local_read_2 = localize(read_pair[1])
+
         ref_gs_stem = self.ref_fasta.split('.fa')[0]
         ref_files = gsutil_expand_stem(ref_gs_stem)
 
-        output_raw_bcf = self.out_path + '/var.raw.bcf'
-        output_filt_vcf = self.out_path + '/var.flt.vcf'
+        intermediate_sam = self.out_path + '/aln.sam'
+        intermediate_bam_sort = self.out_path + '/sorted.bam.sort_tmp'
+
+        output_raw_bcf = prefix.apply(self.out_path + '/var.raw.bcf')
+        output_filt_vcf = prefix.apply(self.out_path + '/var.flt.vcf')
+        output_vcf_header = output_filt_vcf + '.header'
+        output_vcf_body = output_filt_vcf + '.body'
+        output_bam = prefix.apply(self.out_path + '/sorted.bam')
 
         inputs = [read_pair[0], read_pair[1]]
         inputs.extend(ref_files)
+        ref_dir = self.out_path + '/ref'
 
-        cmd = iq.util.Command(['bwa', 'mem',
-                               '-t', self.container.cpu_cores,
-                               localize(self.ref_fasta),
-                               localize(read_pair[0]),
-                               localize(read_pair[1]),
-                               '>', self.out_path + '/aln.sam'])
+        cmd = iq.util.Command(['mkdir', ref_dir])
+        for i in ref_files:
+            cmd.chain(['cp', localize(i), ref_dir])
+
+        local_ref = localize(self.ref_fasta, ref_dir)
+
+        cmd.chain(['bwa', 'mem',
+                   '-t', self.container.cpu_cores,
+                   local_ref,
+                   local_read_1,
+                   local_read_2,
+                   '>', intermediate_sam])
 
         if self.generate_bam:
-
             cmd.chain(['samtools', 'view', '-u',
                        self.out_path + '/aln.sam'])
             cmd.pipe(['samtools', 'sort',
                               '-@', 12,
                               '-O', 'bam',
-                              '-T', self.out_path + '/sorted.bam.sort_tmp',
-                              '-o', self.out_path + '/sorted.bam',
+                              '-T', intermediate_bam_sort,
+                              '-o', output_bam,
                               '-'])
-
-        # If we don't set mark_duplicates and run the de-duplication step the bam
-        # used in subsequent gentyping will just be this sorted bam.
-        bam = self.out_path + '/sorted.bam'
 
         if self.mark_duplicates:
 
-            bam = self.out_path + '/sorted.deduped.bam'
-
-            metrics_file = self.out_path + '/MarkDuplicates_metrics.txt'
+            tmp_sorted_bam = prefix.apply(
+                self.out_path + '/sorted.deduped.bam')
+            metrics_file = prefix.apply(
+                self.out_path + '/MarkDuplicates_metrics.txt')
 
             cmd.chain(['picard',
                        'MarkDuplicates',
-                       'INPUT=%s/sorted.bam' % self.out_path,
-                       'OUTPUT=%s' % bam,
+                       'INPUT=%s' % output_bam,
+                       'OUTPUT=%s' % tmp_sorted_bam,
                        'ASSUME_SORTED=true',
                        'CREATE_INDEX=true',
                        'MAX_RECORDS_IN_RAM=2000000',
                        'METRICS_FILE=%s' % metrics_file,
                        'REMOVE_DUPLICATES=false'])
 
-        cmd.chain(['samtools', 'mpileup', '-uf', localize(self.ref_fasta), bam])
+            cmd.chain(['cp', tmp_sorted_bam, output_bam])
+
+        cmd.chain(['samtools', 'mpileup', '-uf', local_ref, output_bam])
         cmd.pipe(['bcftools', 'view', '-O', 'b', '-', '>', output_raw_bcf])
 
         cmd.chain(['bcftools', 'view', output_raw_bcf])
@@ -90,26 +108,34 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         vcf_header = output_filt_vcf + '.header'
         vcf_body = output_filt_vcf + '.body'
 
-        cmd.chain(["rm", "/mnt/data/output/aln.sam"])
-        cmd.chain(["grep", "'^##'", output_filt_vcf, ">", vcf_header])
-        cmd.chain(["grep", "-v", "'^##'", output_filt_vcf, ">", vcf_body])
+        #for i in intermediates:
+        cmd.chain(["rm", intermediate_sam])
 
-        # TODO: So obviously will be refactoring this to be less repetitive.
+        cmd.chain(["grep", "'^##'", output_filt_vcf,
+                   ">", output_vcf_header])
+
+        cmd.chain(["grep", "-v", "'^##'", output_filt_vcf,
+                   ">", output_vcf_body])
+
+        cmd.chain([
+            'cat', output_vcf_body,
+            '| tr "," ";" | tr "\t" "," | tail -n +2',
+            '>', output_vcf_body + '.csv'
+        ])
+
         yield task.submit(self, cmd.txt, inputs=inputs,
-                          expected_outputs=[{'name': 'var.flt.vcf.header',
-                                             'file_type': 'header.vcf'},
-                                            {'name': 'var.flt.vcf.body',
-                                             'file_type': 'body.vcf'},
-                                            {'name': 'var.flt.vcf',
+                          expected_outputs=[{'name': output_vcf_header,
+                                             'file_type': 'VCFHeader'},
+                                            {'name': output_vcf_body + '.csv',
+                                             'file_type': 'VCFBody'},
+                                            {'name': output_filt_vcf,
                                              'file_type': 'vcf'},
-                                            {'name': 'var.raw.bcf',
+                                            {'name': output_raw_bcf,
                                              'file_type': 'bcf'},
                                             {'name': 'metrics.txt',
                                              'file_type': 'metrics.txt'},
-                                            {'name': 'sorted.deduped.bam',
-                                             'file_type': 'bam'},
-                                            {'name': 'sorted.deduped.bai',
-                                             'file_type': 'bai'}])
+                                            {'name': output_bam,
+                                             'file_type': 'bam'}])
 
 
 class GenotypeBQUpload(bq.BQUpload):
@@ -117,15 +143,16 @@ class GenotypeBQUpload(bq.BQUpload):
     def __init__(self, dataset_name, table_name):
 
         SCHEMA = [
-            SchemaField('id', 'STRING', mode='required'),
             SchemaField('refname', 'STRING', mode='required'),
             SchemaField('start', 'INTEGER', mode='required'),
+            SchemaField('id', 'STRING', mode='required'),
             SchemaField('refbases', 'STRING', mode='required'),
             SchemaField('altbases', 'STRING', mode='required'),
             SchemaField('quality', 'FLOAT', mode='required'),
             SchemaField('filter', 'STRING', mode='required'),
             SchemaField('info', 'STRING', mode='required'),
-            SchemaField('format', 'STRING', mode='required')
+            SchemaField('format', 'STRING', mode='required'),
+            SchemaField('balance', 'STRING', mode='required')
         ]
 
         super(GenotypeBQUpload, self).__init__(SCHEMA, dataset_name, table_name)

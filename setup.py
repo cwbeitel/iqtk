@@ -22,103 +22,33 @@ import sys
 from setuptools import find_packages, setup
 from setuptools.command.test import test as TestCommand
 
-_VERSION = '0.0.1'
-
+_VERSION = '0.0.3'
 
 REQUIRED_PACKAGES = [
-    # 'google-cloud-dataflow',
-    # 'click',
-    # 'docker',
-    #'colorama',
-    # 'coloredlogs',
-    # 'google-apitools',
-    # 'google-auth',
-    # 'google-gax',
-    # 'grpcio',
-    # 'oauth2client',
-    # 'protobuf',
-    # 'pytest',
-    # 'pytz',
-    # 'PyYAML',
-    # 'requests',
-    # 'rsa',
-    # 'six',
-    # 'subprocess32',
-    # 'uritemplate'
-    'google-cloud-dataflow==0.6.0',
-    'google-cloud-bigquery==0.22.1',
-    'google-api-python-client==1.6.2',
-    'click==6.7',
-    'docker==2.2.1',
-    'colorama==0.3.9',
-    'coloredlogs==6.1',
-    'google-apitools==0.5.10',
-    'google-auth==1.0.0',
-    'google-auth-httplib2==0.0.2',
-    'google-cloud-core==0.22.1',
-    'google-gax==0.15.8',
-    'googleapis-common-protos==1.5.2',
-    'grpcio==1.2.1',
-    'oauth2client==3.0.0',
-    'proto-google-cloud-datastore-v1==0.90.0',
-    'proto-google-cloud-logging-v2==0.91.3',
-    'protobuf==3.2.0',
-    'pytest==3.0.7',
-    'pytest-cov==2.4.0',
-    'pytz==2017.2',
-    'PyYAML==3.12',
-    'requests==2.13.0',
-    'rsa==3.4.2',
-    'six==1.10.0',
-    'subprocess32==3.2.7',
-    'uritemplate==3.0.0',
+    "google-cloud-pubsub",
+    "google-cloud-dataflow",
+    "protobuf",
+    "google-cloud-bigquery",
+    "docker",
+    "subprocess32",
+    "uritemplate",
+    "coloredlogs",
+    "google-api-python-client",
+    "click"
 ]
 
-project_name = 'inquiry'
-
-CONSOLE_SCRIPTS = [
-    'iqtk = inquiry.framework.cli:main'
-    ]
-
-TEST_PACKAGES = [
-    # 'pytest',
-    # 'pytest-cov'
-]
-#
-# TEST_ARGS = [
-#     '--cov-report=term',
-#     '--cov-report=html',
-#     '--cov=inquiry'
-# ]
+project_name = 'iqtk'
+CONSOLE_SCRIPTS = ['iqtk = inquiry.framework.cli:main']
+TEST_PACKAGES = []
 
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
-# class IQTKTest(TestCommand):
-#     user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
-#
-#     def initialize_options(self):
-#         TestCommand.initialize_options(self)
-#
-#     def run_tests(self):
-#         import pytest
-#         errno = pytest.main(TEST_ARGS + self.get_subtest())
-#         sys.exit(errno)
-#
-#     def get_subtest(self):
-#         return []
-#
-#
-# class UnitTest(IQTKTest):
-#
-#     def get_subtest(self):
-#         return ['inquiry']
-
 setup(
     name=project_name,
     version=_VERSION,
-    description='A bioinformatics toolkit.',
-    long_description='A toolkit. For *bioinformatics*. Oh yeah.',
+    description='Reproducible biological data science.',
+    long_description='The Inquiry Toolkit is a full stack of open-source data infrastructure components for reproducible scientific research.',
     url='http://iqtk.io',
     author='University of California',
     author_email='inquiryproject@lists.lbl.gov',
@@ -144,8 +74,4 @@ setup(
     keywords='inquiry genom proteom metabolom transcriptom',
     zip_safe=False,
     include_package_data=True,
-    # test_suite='test',
-    # cmdclass={
-    #     'unit': UnitTest
-    #     }
     )

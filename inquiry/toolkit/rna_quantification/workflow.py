@@ -123,10 +123,10 @@ class TranscriptomicsWorkflow(Workflow):
                           cond_a_bams=AsList(align_a),
                           cond_b_bams=AsList(align_b))
 
-        # (util.match(cd, {'file_type': 'differentialExpressionCSV'})
-        # | 'bq-upload' >> beam.ParDo(
-        #      ops.DiffExBQUpload(args.bq_dataset_name, args.bq_table_name)
-        #      ))
+        (util.match(cd, {'file_type': 'differentialExpressionCSV'})
+        | 'bq-upload' >> beam.ParDo(
+             ops.DiffExBQUpload(args.bq_dataset_name, args.bq_table_name)
+             ))
 
         return cd
 

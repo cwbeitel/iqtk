@@ -12,9 +12,9 @@
 # limitations under the License.
 # ==============================================================================
 
-project=jbei-cloud
-version=0.0.1
+project=iqtk
+version=0.0.3
 tool=cufflinks
-tag=gcr.io/${project}/${tool}:${version}
-
-docker build -t ${tag} . && gcloud docker -- push ${tag}
+tag=quay.io/${project}/${tool}:${version}
+docker build -t ${tag} .
+docker push $tag

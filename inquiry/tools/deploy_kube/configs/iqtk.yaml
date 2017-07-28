@@ -12,7 +12,7 @@ spec:
     spec:
       containers:
       - name: iqtk-service
-        image: quay.io/iqtk/iqtk:0.0.1
+        image: quay.io/iqtk/iqtk:0.0.3
         resources:
           requests:
             cpu: 100m

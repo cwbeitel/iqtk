@@ -25,6 +25,7 @@ import os
 import re
 import tempfile
 import json
+import uuid
 
 from googleapiclient import discovery
 
@@ -166,7 +167,8 @@ def poll_until_complete(op, interval=4):
 
 
 def construct_outdir(output_dir_arg, label, tag):
-    salt = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    #salt = str(datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
+    salt = str(uuid.uuid4())
     output_dir = output_dir_arg + '/' + label + '-'
     if label is not None and tag is not None:
         output_dir += (label + '-')

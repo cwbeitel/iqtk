@@ -20,8 +20,8 @@ py_library(
       ':workflow',
       ':bq',
       ':viz',
-      ':client',
-      ':cli'
+      ':cli',
+      ':service'
     ],
     visibility = ["//visibility:public"],
 )
@@ -36,8 +36,8 @@ py_library(
 )
 
 py_library(
-    name = "client",
-    srcs = ["client.py"],
+    name = "service",
+    srcs = ["service.py"],
     srcs_version = "PY2AND3",
     deps = [
     ],
