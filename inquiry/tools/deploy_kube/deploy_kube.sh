@@ -13,6 +13,8 @@
 # limitations under the License.
 # ==============================================================================
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 CLUSTER_NAME=inquiry
 
 DEPLOYMENT=`gcloud container clusters list --filter=name=${CLUSTER_NAME}`
@@ -25,4 +27,4 @@ fi
 gcloud container clusters get-credentials ${CLUSTER_NAME}
 
 kubectl delete all -l app=iqtk
-kubectl create -f inquiry/tools/deploy_kube/configs/iqtk.yaml --validate=false
+kubectl create -f ${SCRIPT_DIR}/configs/iqtk.yaml --validate=false

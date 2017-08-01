@@ -1,7 +1,12 @@
 FROM iqtk-base:latest
 
+RUN curl https://sdk.cloud.google.com | bash
+ENV PATH="${HOME}/google-cloud-sdk/bin/:${PATH}"
+RUN echo PATH='${HOME}/google-cloud-sdk/bin/:${PATH}' >> ${HOME}/.bashrc
+RUN ${HOME}/google-cloud-sdk/bin/gcloud components update
+
 COPY . /app
 
 RUN pip2 install /app/iqtk-*.tar.gz
 
-RUN iqtk run
+ENTRYPOINT ["/bin/bash", "-c", "python -m inquiry.framework.service"]

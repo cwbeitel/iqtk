@@ -10,6 +10,10 @@ spec:
         app: iqtk
         tier: iqtk-service
     spec:
+      volumes:
+      - name: google-cloud-key
+        secret:
+          secretName: gcloud-app-credentials-secret
       containers:
       - name: iqtk-service
         image: quay.io/iqtk/iqtk:0.0.3
@@ -17,3 +21,11 @@ spec:
           requests:
             cpu: 100m
             memory: 100Mi
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /var/secrets/google
+        env:
+        - name: GOOGLE_APPLICATION_CREDENTIALS
+          value: /var/secrets/google/key.json
+        - name: CLOUDSDK_CORE_PROJECT
+          value: jbei-cloud

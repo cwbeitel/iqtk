@@ -206,11 +206,7 @@ def parse_arguments(job_tag, bucket=None, num_workers=5, project=None,
         '--num_workers=%d' % int(known_args.num_workers),
         '--worker_machine_type=%s' % known_args.worker_machine_type,
         '--save_main_session'
-        #'--workerCacheMb=%d' % worker_cache_mb
         ])
-
-    # if known_args.hasattr(num_workers):
-    #     pargs.extend('--num_workers=%d' % int(known_args.num_workers))
 
     if known_args.cloud:
         #path = bundle(known_args)

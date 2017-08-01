@@ -57,6 +57,9 @@ ls ${WORKSPACE}
 cp ${DOCKERFILE_PATH} ${TMPDIR}/Dockerfile
 cp ${WORKSPACE}/pip_test/whl/* ${TMPDIR}
 
+# DEV
+cp ${WORKSPACE}/inquiry/tools/ci_build/install/install_gcloud.sh ${TMPDIR}
+
 pushd ${TMPDIR}
 echo $(date) : "=== Building release container"
 # Build the docker container.
