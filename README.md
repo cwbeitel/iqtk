@@ -14,7 +14,7 @@ tracking requests and bugs.**
 
 ### Check out the full documentation at <b><a href="http://iqtk.io">iqtk.io</a></b>
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/gzB6Cba8u9E" frameborder="0" allowfullscreen></iframe>
+Watch the [July status update / technical demonstration screencast](https://www.youtube.com/embed/gzB6Cba8u9E).
 
 ## Getting started
 
