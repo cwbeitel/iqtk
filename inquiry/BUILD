@@ -26,7 +26,8 @@ py_library(
     srcs = ["__init__.py"],
     srcs_version = "PY2AND3",
     visibility = ["//visibility:public"],
-    deps = ["//inquiry/framework", "//inquiry/toolkit"],
+    deps = ["//inquiry/framework", "//inquiry/toolkit",
+            "//inquiry/iot", "//inquiry/services"],
 )
 
 filegroup(

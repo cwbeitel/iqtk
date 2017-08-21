@@ -1,0 +1,11 @@
+{
+  "local": true,
+  "cloud": false,
+  "debug": true,
+  "_meta": {
+    "workflow": "core:metabolomics"
+  },
+  "archives": [
+    "/tmp/iq/data/f01.d.tgz"
+   ]
+}

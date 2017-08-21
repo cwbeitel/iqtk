@@ -1,0 +1,184 @@
+#!/usr/bin/env python
+# Copyright 2017 The Regents of the University of California
+#
+# Licensed under the BSD-3-clause license (the "License"); you may not
+# use this file except in compliance with the License.
+# You are provided a copy of the license in LICENSE.md at the root of
+# this project.
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+"""Mock of Inquiry API client."""
+
+import argparse
+
+import google_auth_oauthlib.flow
+import requests
+from six.moves import urllib
+
+import pprint
+import json
+
+import click
+import os
+
+
+class InquiryClient(object):
+    """Inquiry python client."""
+
+    def __init__(self, host='https://ml-beam.appspot.com',
+                 client_secrets='default',
+                 print_results=False,
+                 api_key=None):
+        """Initialize the workflow service client object."""
+
+        if 'IQTK_CLIENT_CONFIG_HOST' in os.environ:
+            host = os.environ['IQTK_CLIENT_CONFIG_HOST']
+
+        if 'IQTK_CLIENT_SECRETS_FILE' in os.environ:
+            client_secrets = os.environ['IQTK_CLIENT_SECRETS_FILE']
+
+        if 'IQTK_API_KEY' in os.environ:
+            api_key = os.environ['IQTK_API_KEY']
+
+        self.host = host
+        self.client_secrets = client_secrets
+        self.print_results = print_results
+        self.api_key = api_key
+        self.id_token = None
+
+    def login(self):
+        """Run OAuth flow."""
+
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+            self.client_secrets, scopes=['openid', 'email', 'profile'])
+
+        # Run the OAuth 2.0 flow to obtain credentials from the user.
+        flow.run_local_server(port=8081)
+
+        # The credentials have both an access token and an ID token. Cloud
+        # Endpoints uses the ID Token.
+        id_token = flow.oauth2session.token['id_token']
+
+        return id_token
+
+    def _ensure_authenticated(self):
+        """Obtain cached user OAuth credentials or run auth flow."""
+
+        # HACK
+        self.id_token = self.login()
+
+    def verify_auth(self):
+        self._ensure_authenticated()
+        return self._get('/auth/info/googleidtoken')
+
+    def _request(self, route, body=None, mode="GET"):
+        #self._ensure_authenticated() # Ensures self.api_key and self.id_token
+
+        url = urllib.parse.urljoin(self.host, route)
+        params = {
+            'key': self.api_key
+        }
+        headers = {
+            'Authorization': 'Bearer {}'.format(self.id_token)
+        }
+
+        if mode is "GET":
+            response = requests.get(url, params=params, headers=headers)
+        elif mode is "POST":
+            response = requests.post(url, params=params, headers=headers, json=body)
+        response.raise_for_status()
+
+        self._maybe_print(response.text)
+
+        return response.text
+
+    def _post(self, route, body):
+        return self._request(route, body, "POST")
+
+    def _get(self, route):
+        return self._request(route, "GET")
+
+    def _maybe_print(self, res):
+        if self.print_results:
+            print res
+
+    def submit(self, config):
+        """Submit a workflow config to run as a job on the flow runner service."""
+        return self._post('/submit', {'config': config})
+
+    def list(self):
+        """List all jobs present and past."""
+        return self._get('/list')
+
+    def describe(self, flow_id):
+        """Obtain a job description object given a job ID."""
+        return self._post('/describe', {'id': flow_id})
+
+    def delete(self, flow_id):
+        """Delete a job given its ID."""
+        return self._post('/delete', {'id': flow_id})
+
+
+def _config_from_path(config_path):
+    with open(config_path, 'r') as f:
+        config = json.load(f)
+    return config
+
+cli_client = InquiryClient(print_results=True)
+
+
+@click.group()
+def cli():
+    """Inquiry command-line interface."""
+    pass
+
+@cli.group()
+def flow():
+    """Inquiry flow service command line interface."""
+    pass
+
+@flow.command()
+def verify_auth():
+    """Submit a workflow config to run as a job on the flow runner service."""
+    cli_client.verify_auth()
+
+
+@flow.command()
+@click.argument('config_path', default=None, required=True)
+def submit(config_path):
+    """Submit a workflow config to run as a job on the flow runner service."""
+    config_object = _config_from_path(config_path)
+    cli_client.submit(config_object)
+
+
+@flow.command()
+@click.argument('job_id', default=None, required=True)
+def describe(job_id):
+    """Obtain a job description object given a job ID."""
+    cli_client.describe(job_id)
+
+
+@flow.command()
+def list():
+    """List all jobs present and past."""
+    cli_client.list()
+
+
+@flow.command()
+@click.argument('job_id', default=None, required=True)
+def delete(job_id):
+    """Delete a job given its ID."""
+    cli_client.delete(job_id)
+
+
+def cli_main():
+    cli(obj={})
+
+
+if __name__ == '__main__':
+    cli_main()

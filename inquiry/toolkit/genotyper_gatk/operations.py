@@ -12,23 +12,22 @@
 # limitations under the License.
 # ==============================================================================
 
-import inquiry.framework as iq
 from inquiry.framework.util import localize
 from inquiry.framework.util import gsutil_expand_stem
 from google.cloud.bigquery import SchemaField
 from inquiry.framework import task
+from inquiry.framework import util
 from inquiry.framework import bq
 
 
-
-class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
+class CombinedSamtoolsGenotyper(task.ContainerTask):
 
     def __init__(self, args, ref_fasta, generate_bam=True, mark_duplicates=True):
         """Initialize a container task."""
         self.ref_fasta = ref_fasta
         self.generate_bam = generate_bam
         self.mark_duplicates = mark_duplicates
-        container = iq.task.ContainerTaskResources(
+        container = task.ContainerTaskResources(
             disk=60, cpu_cores=4, ram=8,
             image='gcr.io/jbei-cloud/aligntools:0.0.1')
         super(CombinedSamtoolsGenotyper, self).__init__(
@@ -57,7 +56,7 @@ class CombinedSamtoolsGenotyper(iq.task.ContainerTask):
         inputs.extend(ref_files)
         ref_dir = self.out_path + '/ref'
 
-        cmd = iq.util.Command(['mkdir', ref_dir])
+        cmd = util.Command(['mkdir', ref_dir])
         for i in ref_files:
             cmd.chain(['cp', localize(i), ref_dir])
 

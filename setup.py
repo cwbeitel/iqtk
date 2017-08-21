@@ -38,7 +38,8 @@ REQUIRED_PACKAGES = [
 ]
 
 project_name = 'iqtk'
-CONSOLE_SCRIPTS = ['iqtk = inquiry.framework.cli:main']
+CONSOLE_SCRIPTS = ['iqtk = inquiry.framework.cli:main',
+                   'iq-serv = inquiry.services.runner:main']
 TEST_PACKAGES = []
 
 def read(fname):

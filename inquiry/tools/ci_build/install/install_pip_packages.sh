@@ -27,3 +27,6 @@ pip3 install wheel
 # Install six.
 pip2 install --upgrade six==1.10.0
 pip3 install --upgrade six==1.10.0
+
+pip2 install honcho
+pip3 install honcho

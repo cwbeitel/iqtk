@@ -21,24 +21,24 @@ from inquiry.toolkit.alignment.workflow import AlignmentWorkflow
 
 
 E2E_CASES = [
-    # {
-    #     'op': AlignmentWorkflow,
-    #     'config': {
-    #       "ref_fasta": (
-    #             "gs://inquiry-test/tests/toolkit-genotyping/data/genome_small.fa"
-    #           ),
-    #       "reads": [
-    #            ["gs://cflow-public/data/rnaseq/downsampled_reads/GSM794486_C2_R1_1_small.fq",
-    #             "gs://cflow-public/data/rnaseq/downsampled_reads/GSM794486_C2_R1_2_small.fq"]
-    #        ]
-    #     },
-    #     'expected': [
-    #         {
-    #             'pattern': '^f\.txt',
-    #             'checksum': 'b1kCrCNwJL3QwXbLkwY9xA=='
-    #         }
-    #     ]
-    # }
+    {
+        'op': AlignmentWorkflow,
+        'config': {
+          "ref_fasta": (
+                "gs://inquiry-test/tests/toolkit-genotyping/data/genome_small.fa"
+              ),
+          "reads": [
+               ["gs://cflow-public/data/rnaseq/downsampled_reads/GSM794486_C2_R1_1_small.fq",
+                "gs://cflow-public/data/rnaseq/downsampled_reads/GSM794486_C2_R1_2_small.fq"]
+           ]
+        },
+        'expected': [
+            {
+                'pattern': '^f\.txt',
+                'checksum': 'b1kCrCNwJL3QwXbLkwY9xA=='
+            }
+        ]
+    }
 ]
 
 class WorkflowTest(unittest.TestCase):

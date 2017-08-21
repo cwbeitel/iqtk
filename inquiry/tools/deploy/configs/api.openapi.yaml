@@ -1,0 +1,149 @@
+# [START swagger]
+swagger: "2.0"
+info:
+  description: "An API for submitting, listing, describing, and deleting flow jobs."
+  title: "Inquiry Workflow API"
+  version: "0.0.1"
+#host: "iqtk-api.endpoints.YOUR-PROJECT-ID.cloud.goog"
+host: "YOUR-PROJECT-ID.appspot.com"
+# [END swagger]
+basePath: "/"
+consumes:
+- "application/json"
+produces:
+- "application/json"
+schemes:
+- "https"
+paths:
+  "/submit":
+    post:
+      description: "Submit a workflow to run on the flow service."
+      operationId: "submit"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          # If successful, will return a jobMessage with metadata and the job's
+          # jobID.
+          description: "Job message describing initiated job."
+          schema:
+            $ref: "#/definitions/jobMessage"
+      parameters:
+      - description: "Config describing the job to be initiated."
+        in: body
+        name: config
+        required: true
+        schema:
+          $ref: "#/definitions/jobSubmitMessage"
+      security:
+      - api_key: []
+  "/describe":
+    post:
+      description: "Given a job ID, return the jobMessage that describes that job."
+      operationId: "describe"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Job message describing job referenced by job ID."
+          schema:
+            $ref: "#/definitions/jobMessage"
+      parameters:
+      - description: "The string ID referencing the job to describe."
+        in: body
+        name: id
+        required: true
+        schema:
+          $ref: "#/definitions/jobIDMessage"
+      security:
+      - api_key: []
+  "/list":
+    post:
+      description: "Return a list of of all jobs."
+      operationId: "list"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "List of all jobs."
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/jobMessage"
+      security:
+      - api_key: []
+  "/cancel":
+    post:
+      description: "Cancel a specified workflow by ID."
+      operationId: "cancel"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "A job message providing metadata of cancelled job."
+          schema:
+            $ref: "#/definitions/jobMessage"
+      parameters:
+      - description: "The string ID referencing the job to cancel."
+        in: body
+        name: id
+        required: true
+        schema:
+          $ref: "#/definitions/jobIDMessage"
+      security:
+      - api_key: []
+  "/auth/info/googleidtoken":
+    get:
+      description: "Returns the requests' authentication information."
+      operationId: "authInfoGoogleIdToken"
+      produces:
+      - "application/json"
+      responses:
+        200:
+          description: "Authentication info."
+          schema:
+            $ref: "#/definitions/authInfoResponse"
+      security:
+      - google_id_token: []
+definitions:
+  jobMessage:
+    properties:
+      name:
+        type: "string"
+  jobSubmitMessage:
+    properties:
+      config:
+        type: "string"
+  jobIDMessage:
+    properties:
+      id:
+        type: "string"
+  authInfoResponse:
+    properties:
+      id:
+        type: "string"
+      email:
+        type: "string"
+# [START securityDef]
+securityDefinitions:
+  api_key:
+    type: "apiKey"
+    name: "key"
+    in: "query"
+# [END securityDef]
+  google_id_token:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v3/certs"
+    x-google-audiences: "OAUTH-CLIENT-ID.apps.googleusercontent.com"
+  # [START firebaseAuth]
+  firebase:
+    authorizationUrl: ""
+    flow: "implicit"
+    type: "oauth2"
+    x-google-issuer: "https://securetoken.google.com/YOUR-PROJECT-ID"
+    x-google-jwks_uri: "https://www.googleapis.com/service_accounts/v1/metadata/x509/securetoken@system.gserviceaccount.com"
+    x-google-audiences: "YOUR-PROJECT-ID"
+  # [END firebaseAuth]

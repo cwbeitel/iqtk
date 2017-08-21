@@ -34,11 +34,13 @@ REQUIRED_PACKAGES = [
     "uritemplate",
     "coloredlogs",
     "google-api-python-client",
-    "click"
+    "click",
+    "flask"
 ]
 
 project_name = 'iqtk'
-CONSOLE_SCRIPTS = ['iqtk = inquiry.framework.cli:main']
+CONSOLE_SCRIPTS = ['iqtk = inquiry.framework.cli:main',
+                   'iq-serv = inquiry.services.run:main']
 TEST_PACKAGES = []
 
 def read(fname):

@@ -1,0 +1,3 @@
+iot_handler: iq-serv --service=iot_handler
+flow_runner: iq-serv --service=flow_runner
+api_service: iq-serv --service=api_service

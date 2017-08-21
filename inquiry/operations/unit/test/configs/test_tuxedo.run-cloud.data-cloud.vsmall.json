@@ -1,0 +1,20 @@
+{
+  "dry_run": false,
+  "cloud": true,
+  "local": false,
+  "_meta": {
+    "workflow": "core:expression"
+  },
+  "bq_dataset_name": "demonstration",
+  "bq_table_name": "diffexCloudSmall",
+  "ref_fasta": "gs://iqtk/dmel/bt2/genome_small.fa",
+  "genes_gtf": "gs://iqtk/dmel/annotation/genes_small.gtf",
+  "cond_a_pairs": [
+    ["gs://iqtk/rnaseq/reads_c1_1_vsmall.fq",
+     "gs://iqtk/rnaseq/reads_c1_2_vsmall.fq"]
+   ],
+  "cond_b_pairs": [
+    ["gs://iqtk/rnaseq/reads_c2_1_vsmall.fq",
+     "gs://iqtk/rnaseq/reads_c2_2_vsmall.fq"]
+   ]
+}
