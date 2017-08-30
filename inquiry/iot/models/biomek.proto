@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+message PlateReadingHeader {
+  required string plate_format = 1;
+}
+
+message WellReading {
+  required float reading = 1;
+}
+
+message WellReadingSet {
+  required int32 absorbance = 1;
+  repeated WellReading readings = 2;
+}
+
+message PlateReading {
+
+  required PlateReadingHeader header = 1;
+  repeated WellReadingSet well_reading_sets = 2;
+
+}
+
+message BioMekRunconfig {
+
+}

@@ -22,30 +22,29 @@ from inquiry.toolkit.rna_quantification.workflow import TranscriptomicsWorkflow
 
 
 class WorkflowTest(unittest.TestCase):
-    pass
 
-    # def test_e2e_vsmall(self):
-    #     c = {'op': TranscriptomicsWorkflow,
-    #          'config': {
-    #              "cloud": True,
-    #              "ref_fasta": "gs://inquiry-test/tests/toolkit-genotyping/data/genome_small.fa",
-    #              "genes_gtf": "gs://inquiry-test/tests/toolkit-expression/data/genes_small.gtf",
-    #              "cond_a_pairs": [
-    #                  ["gs://inquiry-test/tests/toolkit-expression/data/reads_c1_1_vsmall.fq",
-    #                   "gs://inquiry-test/tests/toolkit-expression/data/reads_c1_2_vsmall.fq"]
-    #                  ],
-    #              "cond_b_pairs": [
-    #                  ["gs://inquiry-test/tests/toolkit-expression/data/reads_c2_1_vsmall.fq",
-    #                   "gs://inquiry-test/tests/toolkit-expression/data/reads_c2_2_vsmall.fq"]
-    #                  ]
-    #              },
-    #          'expected': [
-    #              {'pattern': '^f\.txt',
-    #               'checksum': 'b1kCrCNwJL3QwXbLkwY9xA=='}
-    #              ]
-    #          }
-    #
-    #     self.assertTrue(iqf.local.e2e_test_runner(c))
+    def test_e2e_vsmall(self):
+        c = {'op': TranscriptomicsWorkflow,
+             'config': {
+                 "cloud": True,
+                 "ref_fasta": "gs://inquiry-test/tests/toolkit-genotyping/data/genome_small.fa",
+                 "genes_gtf": "gs://inquiry-test/tests/toolkit-expression/data/genes_small.gtf",
+                 "cond_a_pairs": [
+                     ["gs://inquiry-test/tests/toolkit-expression/data/reads_c1_1_vsmall.fq",
+                      "gs://inquiry-test/tests/toolkit-expression/data/reads_c1_2_vsmall.fq"]
+                     ],
+                 "cond_b_pairs": [
+                     ["gs://inquiry-test/tests/toolkit-expression/data/reads_c2_1_vsmall.fq",
+                      "gs://inquiry-test/tests/toolkit-expression/data/reads_c2_2_vsmall.fq"]
+                     ]
+                 },
+             'expected': [
+                 {'pattern': '^f\.txt',
+                  'checksum': 'b1kCrCNwJL3QwXbLkwY9xA=='}
+                 ]
+             }
+
+        self.assertTrue(iqf.local.e2e_test_runner(c))
 
 
 if __name__ == "__main__":

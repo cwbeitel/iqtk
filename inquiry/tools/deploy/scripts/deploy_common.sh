@@ -70,11 +70,11 @@ export_service_name_id() {
 }
 
 ensure_kube_cluster_exists() {
-  CLUSTER_NAME=inquiry
+  CLUSTER_NAME=inquirytk
   DEPLOYMENT=`gcloud container clusters list --filter=name=${CLUSTER_NAME}`
   if [ -z "${DEPLOYMENT}" ]; then
     echo 'Container engine deployment with name ${CLUSTER_NAME} not found, deploying...'
-  	gcloud container clusters create ${CLUSTER_NAME} \
+  	gcloud alpha container clusters create ${CLUSTER_NAME} \
   		--scopes "cloud-platform" \
   		--num-nodes 4
   else

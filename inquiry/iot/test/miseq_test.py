@@ -13,82 +13,143 @@
 # ==============================================================================
 
 import unittest
+import logging
+import tempfile
 
 from inquiry.iot import miseq
+from inquiry.iot.models import miseq_pb2
 
 
-class MiSeqSequencingRunTest(unittest.TestCase):
-    """Tests of object for representing miseq sequencing run metadata."""
-
-    def test_reconstruct(self):
-        """Test of reconstruction from path."""
-
-        cases = [{
-            'path': ('gs://iqtk-test-public/iot/miseq/'
-                     'test_miseq_sequencing_run/run001'),
-            'expected': {
-                'num_read_pairs': 12,
-                'run_id': 123
-            }
-        }]
-
-        for c in cases:
-
-            # Reconstruct a representation of that run
-            r = miseq.SequencingRun().reconstruct(c['path'])
-
-            for key, value in c['expected']:
-                self.assertTrue(hasattr(r, key))
-                self.assertEqual(getattr(r, key), value)
+def _verify_sample_sheet_test_case(test, run_config):
+    test.assertEqual(run_config.iem_file_version, 4)
+    test.assertEqual(run_config.investigator_name, 'Solomon Stonebloom')
+    test.assertEqual(run_config.experiment_name, 'FD_HS_BE_GalS')
+    test.assertEqual(run_config.date, '12/12/14')
+    test.assertEqual(run_config.workflow, 'GenerateFASTQ')
+    test.assertEqual(run_config.application, 'RNA-Seq')
+    test.assertEqual(run_config.assay, 'TruSeq LT')
+    test.assertEqual(run_config.description, '')
+    test.assertEqual(run_config.chemistry, 'Default')
+    test.assertEqual(run_config.read_1_length, 76)
+    test.assertEqual(run_config.read_2_length, 76)
+    test.assertEqual(run_config.read_1_adapter, 'AGATCGGAAGAGCACACGTCTGAACTCCAGTCA')
+    test.assertEqual(run_config.read_2_adapter, 'AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT')
+    test.assertTrue(run_config.IsInitialized())
 
 
-class MiSeqTest(unittest.TestCase):
+class ParseRunConfigTest(unittest.TestCase):
 
-    def init_test(self):
-        m = MiSeq()
+    def setUp(self):
+        self.sheet_text = """[Header],,,,,,,\rIEMFileVersion,4,,,,,,\rInvestigator Name,Solomon Stonebloom,,,,,,\rExperiment Name,FD_HS_BE_GalS,,,,,,\rDate,12/12/14,,,,,,\rWorkflow,GenerateFASTQ,,,,,,\rApplication,RNA-Seq,,,,,,\rAssay,TruSeq LT,,,,,,\rDescription,,,,,,,\rChemistry,Default,,,,,,\r,,,,,,,\r[Reads],,,,,,,\r76,,,,,,,\r76,,,,,,,\r,,,,,,,\r[Settings],,,,,,,\rAdapter,AGATCGGAAGAGCACACGTCTGAACTCCAGTCA,,,,,,\rAdapterRead2,AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT,,,,,,\r,,,,,,,\r[Data],,,,,,,\rSample_ID,Sample_Name,Sample_Plate,Sample_Well,I7_Index_ID,index,Sample_Project,Description\rWT_1,,,,A001,ATCACG,,\rWT_2,,,,A002,CGATGT,,\r"""
 
+    def test_update_miseq_sample_given_line(self):
+        sample = miseq_pb2.MiSeqSample()
+        line = 'WT_1,,,,A001,ATCACG,,'
+        miseq.update_miseq_sample_given_line(sample, line)
+        self.assertEqual(sample.sample_id, 'WT_1')
 
-def _miseq_mock_and_upload(config):
-    """Mock a MiSeq run from a config and upload the result.
+    def test_miseq_run_config_from_local_path(self):
+        """Test of loading sample sheet from CSV path."""
+        tempdir = tempfile.mkdtemp()
+        ssheet_path = tempdir + '/file.txt'
+        with open(ssheet_path, 'w') as f:
+            f.write(self.sheet_text)
+        logging.info(ssheet_path)
+        run_config = miseq.miseq_run_config_from_local_path(ssheet_path)
+        _verify_sample_sheet_test_case(self, run_config)
 
-    Given a config dictionary, run a MiSeq device mock, upload the result,
-    and return the path on cloud storage to the uploaded files.
-
-    Args:
-        config (dict): The config parameterizing the mock run.
-
-    Returns:
-        object: A MiSeqSequencingRun object.
-        str: The path on cloud storage where the mocked run was uploaded.
-    """
-    # Configure the MiSeq device object
-    m = MiSeq()
-
-    # Perform a mock run
-    sequencing_run = m.mock_run(config)
-
-    # Choose a GCS root path for file uploads.
-    remote_dest_base = 'gs://iqtk-test-public/iot/miseq/mock_and_upload_test'
-
-    remote_dest = util.upload(sequencing_run.local_path, remote_dest_base)
-
-    return sequencing_run, remote_dest
+    def test_miseq_run_config_from_gcs_path(self):
+        gcs_path = ('gs://iqtk-test-public/iot/miseq/test_miseq_sequencing_run'
+                    '/141212_M03257_0002_000000000-AC28N/SampleSheet.csv')
+        run_config = miseq.miseq_run_config_from_gcs_path(gcs_path)
+        _verify_sample_sheet_test_case(self, run_config)
 
 
-class MiSeqRunAndReconstructTest(unittest.TestCase):
+class MiSeqRunTest(unittest.TestCase):
 
-    def mock_upload_reconstruct_test(self):
-        """Complex test of reconstructing config used for a MiSeq mock run."""
+    def test_miseq_run_from_gcs_path(self):
+        """Test of reconstruction of state of miseq run from a GCS path."""
+        pass
+
+
+class SyncResponderTest(unittest.TestCase):
+
+    def test_sync_message_indicates_ready_for_analysis(self):
         cases = [
             {
-                'contact': 'billy@lbl.gov'
+                'message': {},
+                'expected': True
             },
             {
-                'contact': 'bobby@lbl.gov'
-            }
+                'message': {},
+                'expected': False
+            },
         ]
-
         for c in cases:
-            run_truth, run_remote_base_path = _miseq_mock_and_upload(c)
-            run = miseq.SequencingRun().reconstruct(run_remote_base_path)
-            self.assertEqual(run_truth, run)
+            res = miseq.sync_message_indicates_ready_for_analysis(c['message'])
+            self.assertEqual(res, c['expected'])
+
+
+# class MockAndParseRunConfigTest(unittest.TestCase):
+#
+#     def init_test_miseq(self):
+#         m = miseq.MiSeq()
+#
+#     def init_test_miseq_run(self):
+#         m = miseq.MiSeqSequencingRun()
+#
+#     def test_reconstruct(self):
+#         """Test of reconstruction from path."""
+#
+#         cases = [
+#             {
+#                 'path': ('gs://iqtk-test-public/iot/miseq/'
+#                          'test_miseq_sequencing_run/run001'),
+#                 'expected': {
+#                     'num_read_pairs': 12,
+#                     'run_id': 123
+#                 },
+#                 'success': True
+#             }
+#         ]
+#
+#         for c in cases:
+#
+#             # Reconstruct a representation of that run
+#             run = MiSeqSequencingRun(c['path'])
+#             run.reconstruct()
+#
+#             for key, value in c['expected'].items():
+#                 # Verify that the reconstructed run object has the expected
+#                 # property values.
+#                 logging.info('%s, %s' % (key, value))
+#                 self.assertTrue(hasattr(r, key))
+#                 #self.assertEqual(getattr(r, key), value)
+#
+#     def test_mock_upload_reconstruct(self):
+#         """Complex test of reconstructing config used for a MiSeq mock run."""
+#         cases = [
+#             {
+#                 'contact': 'billy@lbl.gov'
+#             },
+#             {
+#                 'contact': 'bobby@lbl.gov'
+#             }
+#         ]
+#
+#         for c in cases:
+#
+#             true_run = miseq.MiSeqSequencingRun(c)
+#             true_run._mock()
+#
+#             remote_dest_base = 'gs://iqtk-test-public/iot/miseq/mock_and_upload_test'
+#             remote_dest = util.upload(run.workdir, remote_dest_base)
+#
+#             run = MiSeqSequencingRun(run_remote_base_path)
+#             run.reconstruct()
+#             self.assertEqual(run_truth, run)
+
+
+if __name__ == '__main__':
+    logging.getLogger().setLevel(logging.DEBUG)
+    unittest.main()

@@ -19,7 +19,6 @@ py_library(
       ':task',
       ':workflow',
       ':bq',
-      ':viz',
       ':cli'
     ],
     visibility = ["//visibility:public"],
@@ -139,24 +138,5 @@ py_test(
     srcs_version = "PY2AND3",
     deps = [
       ':workflow'
-    ],
-)
-
-py_library(
-    name = "viz",
-    srcs = ["viz.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-    ],
-    visibility = ["//visibility:public"],
-)
-
-py_test(
-    name = "viz_test",
-    size = "small",
-    srcs = ["test/viz_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-      ':viz'
     ],
 )

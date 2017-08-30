@@ -1,3 +1,4 @@
+
 package(default_visibility = ["//visibility:public"])
 
 licenses(["notice"])  # BSD-3
@@ -61,7 +62,9 @@ py_library(
     srcs = ["miseq.py"],
     srcs_version = "PY2AND3",
     deps = [
-      ':base'
+      ':base',
+      ':util',
+      '//inquiry/iot/models:iot_models'
     ],
     visibility = ["//visibility:public"],
 )

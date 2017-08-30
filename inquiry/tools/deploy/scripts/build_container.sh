@@ -23,7 +23,10 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/deploy_common.sh"
 
-export DEPLOY_TAG=quay.io/iqtk/iqtk:deploy-devel
+if [ -z ${DEPLOY_TAG} ]; then
+  export DEPLOY_TAG=quay.io/iqtk/iqtk:deploy-devel
+  echo $(date) : "=== Defaulting to deploy tag ${DEPLOY_TAG}"
+fi
 
 function build_container() {
 

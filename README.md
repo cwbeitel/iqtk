@@ -10,7 +10,7 @@
 **We use [GitHub issues](https://github.com/iqtk/iqtk/issues) for
 tracking requests and bugs.**
 
-** Please stay tuned for the alpha version which will be needing testers and feedback **
+**This project is currently pre-alpha and should probably not yet be used in production without support.**
 
 ### Check out the full documentation at <b><a href="http://iqtk.io">iqtk.io</a></b>
 
@@ -20,7 +20,7 @@ Watch the [July status update / technical demonstration screencast](https://www.
 
 Here are a few tutorials to get you started!
 
-* [Genotype Analysis with GATK:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/genotype-gatk.ipynb) Learn how to call genome sequence polymorphisms against a reference genome sequence.
+* [Genotype Analysis with Samtools:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/genotype-samtools.ipynb) Learn how to call genome sequence polymorphisms against a reference genome sequence.
 * [Metabolome analysis with XCMS3:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/metabolite-analysis.ipynb) Learn how to use XCMS3 to quantify the levels of metabolites in a sample of interest.
 * [Transcriptome analysis with the Tuxedo suite:](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/tutorials/rna_quantification.ipynb) Learn how to quantify and compare gene expression levels across samples.
 
@@ -180,60 +180,12 @@ For more detailed examples of workflows and operations check out any of those pr
 
 ### Data schema
 
-A key objective of the project is to provide consistent delivery of the data resulting from workflow runs to databases according to a controlled and standardized schemas. Significant effort on the part of the Global Alliance for Genomics and Health (GA4GH) is underway in this area. Here we make use of lightly adapted versions of [those schemas](https://github.com/ga4gh/ga4gh-schemas/tree/master/src/main/proto/ga4gh). The following is an example of the schema used by the RNA-seq analysis workflow above:
+A key objective of the project has been to provide consistent delivery of the data resulting from workflow runs to databases according to a controlled and standardized schemas. Significant effort on the part of the Global Alliance for Genomics and Health (GA4GH) is underway in this area. Here we make use of lightly adapted versions of [those schemas](https://github.com/ga4gh/ga4gh-schemas/tree/master/src/main/proto/ga4gh).
 
-```python
-message DiffExpressionLevel {
-  option (gen_bq_schema.table_name) = "differential_expression";
-  string id = 1;
-  string geneid = 2;
-  string gene = 3;
-  string locus = 4;
-  string sample1 = 5;
-  string sample2 = 6;
-  string status = 7;
-  float expression1 = 8;
-  float expression2 = 9;
-  float lnFoldChange = 10;
-  float testStatistic = 11;
-  float pValue = 12;
-  float qValue = 13;
-  bool significant = 14;
-}
-```
+For more details you can [browse an example schema](https://github.com/iqtk/iqtk/blob/master/inquiry/protobuf/inquiry/toolkit/rna_quantification/schemas/rna_quantification.proto) or check out a [BigQuery table](https://bigquery.cloud.google.com/table/jbei-cloud:somedataset.sometable2?tab=preview) with RNA-seq data using this schema.
 
-For more details you can [browse the full schema](https://github.com/iqtk/iqtk/blob/master/inquiry/protobuf/inquiry/toolkit/rna_quantification/schemas/rna_quantification.proto) or check out a [BigQuery table](https://bigquery.cloud.google.com/table/jbei-cloud:somedataset.sometable2?tab=preview) with RNA-seq data using this schema.
-
-## Syncing data from instruments
-
-Included in the toolkit we have a sync daemon that currently is a simple wrapper of the `gcloud rsync ...` utility. The plan is to extend this utility to be a more generalized intermediate capable of syncing only subsets of data and compressing data prior to sync.
-
-The uplink daemon can be initiated as follows:
-
-```bash
-iqtk uplink --local_path=/my/source/dir \
-            --remote_path=/my/target/uri \
-            --service_account=[your service account address] \
-            --service_account_key_path=[your sa key path] \
-            --sleep_time=600
-```
-
-Make sure the service account you create has read and write access to the target bucket and logs; documentation [here](https://cloud.google.com/storage/docs/authentication).
-
-## Architecture overview
-
-The following diagram provides a non-technical summary of the cloud architecture implemented herein. Please refer to the [design document](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/DESIGN.md) for a technical diagram and per-component narratives.
-
-![](inquiry/docs/assets/arch-pmm.png)
-
-### Acknowledgements
-
-We would like to acknowledge the value of input received from members of the Google Genomics team (summarized this [post](https://opensource.googleblog.com/2016/11/docker-dataflow-happier-workflows.html)). See also [DockerFlow](https://github.com/googlegenomics/dockerflow) for the Java implementation of container workflow orchestration with Beam that directly inspired this work. We also acknowledge the TensorFlow project, see their [LICENSE](https://github.com/tensorflow/tensorflow/blob/master/LICENSE), for various build-related tooling from their project we built upon.
-
-### Contact
-
-Want to get in touch? You can [provide feedback](https://goo.gl/forms/2cOmuUrQ3n3CKpim1) regarding this or other documentation, [reach out to us](https://goo.gl/forms/j8FWdNJqABAoJvcW2) regarding collaboration, or [request a new feature or analytical capability](https://goo.gl/forms/dQm3SDcoNZsV7AAd2).
-
-Read more about the Joint BioEnergy Institute (JBEI) at https://www.jbei.org/.
+#### Acknowledgments
 
 © Regents of the University of California, 2017. Licensed under a BSD-3 <a href="https://github.com/.../blob/master/LICENSE">license</a>.
+
+Thank you to those who have made this project possible. Read more in our [acknowledgments of support](https://github.com/iqtk/iqtk/tree/master/inquiry/docs/support.md).

@@ -19,29 +19,25 @@ import os
 from inquiry.iot import util
 
 
-def _gcs_file_exists(path):
-    """Returns bool whether a file at a specified GCS path exists."""
-    # TODO
-    return True
-
-
 class UploadTest(unittest.TestCase):
 
-    def singleton_upload_test(self):
+    def test_singleton_upload(self):
         """Upload a dir with a single file and check it was synced."""
 
         # Create a temporary directory and write to a file in that dir
         # TODO (use file.txt)
-        temp_dir = tempfile.tempdir()
+        temp_dir = tempfile.mkdtemp()
         with open('%s/%s' % (temp_dir, 'file.txt'), 'w') as f:
             f.write('helloworld')
 
         remote_dir_base = 'gs://iqtk-test-public/iot/util/upload'
-        remote_dir = remote_dir_base = temp_dir.split('/')[-1]
+        remote_dir = remote_dir_base + '/' + temp_dir.split('/')[-1]
         remote_path = util.upload(temp_dir, remote_dir)
 
         # Verify that the uploaded file exists
-        self.assertTrue(_gcs_file_exists(remote_dir + '/file.txt'))
+        self.assertTrue(
+            util._subprocess('gsutil ls %s' % (remote_dir + '/file.txt'))
+            )
 
 
 if __name__ == '__main__':

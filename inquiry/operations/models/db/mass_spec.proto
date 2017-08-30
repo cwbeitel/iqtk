@@ -1,0 +1,19 @@
+syntax = "proto3";
+import "common.proto";
+
+
+message MSQuantification {
+  string compound_id = 1;
+  string Pathway = 2;
+  string sub_pathway = 3;
+  string kegg_id = 4;
+  int32 pubchem_id = 5;
+  string platform = 6;
+  string hmdb = 7;
+  string biochemical_name = 8;
+  float mass = 9;
+  float retention_index = 10;
+  string cas_number = 11;
+  float confidence_interval = 12;
+  Attributes attributes = 13;
+}

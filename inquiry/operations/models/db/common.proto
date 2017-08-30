@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+// Forked from https://github.com/ga4gh/ga4gh-schemas,
+// see https://github.com/ga4gh/ga4gh-schemas/blob/master/LICENSE
+
+message Struct {
+  map<string, Value> fields = 1;
+}
+
+message Value {
+  oneof kind {
+    NullValue null_value = 1;
+    double number_value = 2;
+    string string_value = 3;
+    bool bool_value = 4;
+    Struct struct_value = 5;
+    ListValue list_value = 6;
+  }
+}
+
+message ListValue {
+  repeated Value values = 1;
+}
+
+enum Strand {
+  STRAND_UNSPECIFIED = 0;
+  NEG_STRAND = 1;
+  POS_STRAND = 2;
+}
+
+message Position {
+  string reference_name = 1;
+  int64 position = 2;
+  Strand strand = 3;
+}
+
+message ExternalIdentifier {
+  string database = 1;
+  string identifier = 2;
+  string version = 3;
+}
+
+message Experiment {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string message_create_time = 4;
+  string message_update_time = 5;
+  string run_time = 6;
+  string molecule = 7;
+  string strategy = 8;
+  string selection = 9;
+  string library = 10;
+  string library_layout = 11;
+  string instrument_model = 12;
+  string instrument_data_file = 13;
+  string sequencing_center = 14;
+  string platform_unit = 15;
+  Attributes attributes = 17;
+}
+
+message Analysis {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string created = 4;
+  string updated = 5;
+  string type = 6;
+  repeated string software = 7;
+  Attributes attributes = 9;
+}
+
+message OntologyTerm {
+  string term_id = 1;
+  string term = 2;
+}
+
+message Program {
+  string command_line = 1;
+  string id = 2;
+  string name = 3;
+  string prev_program_id = 4;
+  string version = 5;
+}
+
+enum NullValue {
+  NULL_VALUE = 0;
+}
+
+message AttributeValue {
+  oneof value {
+    string string_value = 1;
+    int64 int64_value = 2;
+    int32 int32_value = 3;
+    bool bool_value = 4;
+    double double_value = 5;
+    ExternalIdentifier external_identifier = 6;
+    OntologyTerm ontology_term = 7;
+    Experiment experiment = 8;
+    Program program = 9;
+    Analysis analysis = 10;
+    NullValue null_value = 11;
+    Attributes attributes = 12;
+    AttributeValueList attribute_list = 13;
+  }
+}
+
+message AttributeValueList {
+  repeated AttributeValue values = 1;
+}
+
+message Attributes {
+  map<string, AttributeValueList> attr = 1;
+}

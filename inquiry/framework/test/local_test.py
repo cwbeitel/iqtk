@@ -108,7 +108,7 @@ class LocalDevOp(task.ContainerTask):
 
     def process(self, file_path):
         cmd = util.Command(['echo "hello world" > /mnt/data/output/f.txt'])
-        yield self.submit(cmd.txt, inputs=[],
+        yield task.submit(self, cmd.txt, inputs=[],
                           expected_outputs=[{'name': 'f.txt', 'type': 'txt'}])
 
 

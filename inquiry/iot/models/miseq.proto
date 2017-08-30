@@ -1,0 +1,39 @@
+syntax = "proto2";
+
+message MiSeqSample {
+  required string sample_id = 1;
+  required string sample_plate = 2;
+  required string sample_well = 3;
+  required string i7_index_id = 4;
+  required string index = 5;
+  required string sample_project = 6;
+  required string description = 7;
+}
+
+message MiSeqRunConfig {
+  required int32 iem_file_version = 1;
+  required string investigator_name = 2;
+  required string experiment_name = 3;
+  required string date = 4;
+  required string workflow = 5;
+  required string application = 6;
+  required string assay = 7;
+  required string description = 8;
+  required string chemistry = 9;
+  required string read_1_adapter = 10;
+  required string read_2_adapter = 11;
+  required int32 read_1_length = 12;
+  required int32 read_2_length = 13;
+  repeated MiSeqSample samples = 14;
+  optional string triggers_analysis = 15;
+}
+
+message SampleFastq {
+  required string sample_id = 1;
+  required string fastq_path = 2;
+}
+
+message MiSeqRun {
+  required MiSeqRunConfig config = 1;
+  repeated SampleFastq sample_fastq = 2;
+}

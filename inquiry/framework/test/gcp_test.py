@@ -19,16 +19,20 @@ import unittest
 
 from inquiry.framework import gcp
 
+# Without trailing /
+TEST_ROOT='gs://iqtk-test-public'
+
+
 class GCSUtilsTest(unittest.TestCase):
 
     def test_list_contents(self):
 
         cases = [
             [
-                'gs://inquiry-test/gcs_ops_test/',
+                TEST_ROOT + '/test_simple_list/',
                 [
-                    'gs://inquiry-test/gcs_ops_test/',
-                    'gs://inquiry-test/gcs_ops_test/file.txt'
+                    TEST_ROOT + '/test_simple_list/',
+                    TEST_ROOT + '/test_simple_list/file.txt',
                 ]
             ]
         ]
@@ -96,7 +100,7 @@ class GCSUtilsTest(unittest.TestCase):
 
     def test_stage_data_round_trip(self):
 
-        test_bucket_stem = 'gs://inquiry-test/tests/stage_data_round_trip'
+        test_bucket_stem = '%s/stage_data_round_trip' % TEST_ROOT
         test_bucket_cases = test_bucket_stem + '/cases'
 
         fname_cases = [
@@ -117,7 +121,7 @@ class GCSUtilsTest(unittest.TestCase):
 
     def test_gcs_get_checksum(self):
 
-        test_stem = 'gs://inquiry-test/tests/verify_remote_checksums'
+        test_stem = '%s/verify_remote_checksums' % TEST_ROOT
         CASES = [{
             'location': test_stem + '/case1/f.txt',
             'checksum': 'b1kCrCNwJL3QwXbLkwY9xA==',
@@ -160,7 +164,7 @@ class GCSUtilsTest(unittest.TestCase):
 
     def test_gcs_verify_checksums(self):
 
-        test_stem = 'gs://inquiry-test/tests/verify_remote_checksums'
+        test_stem = '%s/verify_remote_checksums' % TEST_ROOT
         CASES = [
             {
                 'expected_return': True,
@@ -250,8 +254,7 @@ class GCSUtilsTest(unittest.TestCase):
 
         CASES = [
             {
-                'location': ('gs://inquiry-test/tests/collect_workflow_outputs/'
-                             'case1/'),
+                'location': '%s/collect_workflow_outputs/case1/' % TEST_ROOT,
                 'file_list': [
                     ('gs://inquiry-test/output/test-e2e-0-20170425194932/'
                      'tophat-20170425194933/accepted_hits.bam')
@@ -267,10 +270,10 @@ class GCSUtilsTest(unittest.TestCase):
     def test_verify_workflow_outputs_basic_positive(self):
 
         c = {
-                'output': 'gs://jbei-cloud-iqtk/output/local-workflow-test-simple-20170709154647/',
+                'output': '%s/collect_workflow_outputs/case1/' % TEST_ROOT,
                 'expected': [
                     {
-                        'pattern': '^f\.txt',
+                        'pattern': '\.bam$',
                         'checksum': 'b1kCrCNwJL3QwXbLkwY9xA=='
                     }
                 ],
@@ -284,7 +287,7 @@ class GCSUtilsTest(unittest.TestCase):
 
     def test_verify_workflow_outputs_basic_negative(self):
         c = {
-                'output': 'gs://jbei-cloud-iqtk/output/local-workflow-test-simple-20170709154647/',
+                'output': '%s/collect_workflow_outputs/case1/' % TEST_ROOT,
                 'expected': [
                     {
                         'pattern': '^f\.txt',

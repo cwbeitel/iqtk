@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+message DeviceConfig {
+  string name = 1;
+}

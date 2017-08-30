@@ -29,18 +29,26 @@ function main() {
   kubectl create -f ${SCRIPT_DIR}/../configs/fission-rbac.yaml --validate=false
   kubectl create -f ${SCRIPT_DIR}/../configs/fission-cloud.yaml --validate=false
 
-  while True:
+  while true; do
     echo 'Waiting for fission to start...'
     export FISSION_URL=http://$(kubectl --namespace fission get svc controller -o=jsonpath='{..ip}')
     export FISSION_ROUTER=$(kubectl --namespace fission get svc router -o=jsonpath='{..ip}')
-    if [ -z ${FISSION_URL} && -z ${FISSION_ROUTER}]; then break; fi # Not quite, TODO
+    if [[ ${FISSION_URL} && ${FISSION_ROUTER} ]]; then break; fi
     sleep 5
+  done
 
   # Deploy NATS
-  kubectl create -f ${SCRIPT_DIR}/config/fission-nats.yaml --validate=false
-  kubectl create -f ${SCRIPT_DIR}/config/fission-logger.yaml --validate=false
+  kubectl create -f ${SCRIPT_DIR}/../configs/fission-nats.yaml --validate=false
 
-  kubectl create -f ${SCRIPT_DIR}/config/fission-ui.yaml --validate=false
+  # Deploy logger
+  kubectl create -f ${SCRIPT_DIR}/../configs/fission-logger.yaml --validate=false
+
+  # Deploy UI
+  kubectl create -f ${SCRIPT_DIR}/../configs/fission-ui.yaml --validate=false
+
+  echo "finished deploying fission. to use the fission cli, set the following:"
+  echo "export FISSION_URL=http://$(kubectl --namespace fission get svc controller -o=jsonpath='{..ip}')"
+  echo "export FISSION_ROUTER=$(kubectl --namespace fission get svc router -o=jsonpath='{..ip}')"
 
 }
 

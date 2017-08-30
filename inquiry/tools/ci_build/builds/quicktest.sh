@@ -1,6 +1,12 @@
+#!/usr/bin/env bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/builds_common.sh"
+
+###
+# HACK
+export PATH=$PATH:/root/bin
+###
 
 PIP_BUILD_TARGET="//inquiry/tools/pip_package:build_pip_package"
 bazel build ${PIP_BUILD_TARGET} || die "Build failed."

@@ -1,6 +1,8 @@
 
 # Inquiry Research Infrastructure
 
+** Note: This document is out-dated and an updated draft is forthcoming.**
+
 #### Design Document
 
 ## Purpose
@@ -16,11 +18,3 @@ The purpose of this project is to make available to the broader scientific resea
 4. Structured data warehousing and partial unification of community data space
 
 For a comprehensive exposition of the problem and requirements we refer the reader to the DARPA Synergistic Discovery and Design [call for proposals](https://www.fbo.gov/utils/view?id=6d8044bb740578b628515f8bf70f5733).
-
-## Architecture
-
-The current plan for the architecture is as follows:
-
-![](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/assets/arch-pmm.png)
-
-Additional details will be added after our [ongoing](https://github.com/iqtk/iqtk/issues/1) [discussions](https://github.com/iqtk/iqtk/issues/3) and prototyping.

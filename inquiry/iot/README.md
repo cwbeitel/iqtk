@@ -11,3 +11,7 @@ Run tests with the following:
 ```bash
 bazel test //inquiry/iot/...
 ```
+
+#### Acknowledgments
+
+Licensed under a BSD-3 open source [license](https://github.com/iqtk/iqtk/blob/master/LICENSE), please see [acknowledgments of support](https://github.com/iqtk/iqtk/tree/master/inquiry/docs/support.md).
