@@ -9,7 +9,7 @@ The primary source of financial support for this project was provided by the Dep
 
 ## Google
 
-Substantial computing resources were provided by Google that were fundamentally enabling for this project.
+Computing resources were provided by Google that were fundamentally enabling for this project.
 
 # Technical contributors
 
