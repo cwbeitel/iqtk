@@ -11,43 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Testing of API service."""
 
-import unittest
 import json
+from flask import current_app
 
-from inquiry.services import api
+documents = [{
+    'created': 'long time ago',
+    'body': 'something'
+},
+{
+    'created': 'recently',
+    'body': 'lots of things'
+}]
 
-
-class APIServiceTest(unittest.TestCase):
-
-    def setUp(self):
-        api.app.testing = True
-        self.app = api.app.test_client()
-
-    def test_health(self):
-        rv = json.loads(self.app.get('/health').data)
-        assert 'hp' in rv and rv['hp'] is 100
-
-    def test_list(self):
-        # TODO
-        pass
-
-    def test_describe(self):
-        # TODO
-        pass
-
-    def test_delete(self):
-        # TODO
-        pass
-
-    def test_submit(self):
-        # TODO
-        pass
-
-    def tearDown(self):
-        pass
-
-
-if __name__ == "__main__":
-    unittest.main()
+def main():
+    current_app.logger.info("Received workflow list request.")
+    return json.dumps(documents)

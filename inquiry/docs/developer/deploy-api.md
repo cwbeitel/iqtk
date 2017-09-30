@@ -5,7 +5,7 @@ Here we'll walk through deployment of the Inquiry API endpoint and API service o
 * Deploy the Google Cloud Endpoints API endpoint
 * Deploy the API service on Kubernetes
 
-Before attempting this make sure you have already deployed and configured your kubernetes cluster as described in the
+Pre-requisites for these steps is the [developer quick start](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/developer/developer-quickstart.md) and [cluster deployment](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/developer/deploy-cluster.md).
 
 ### Obtaining an OAuth client ID and API key
 
@@ -18,15 +18,14 @@ The first step is to obtain the OAuth client ID, and API key information, see [d
 
 We recommend storing keys and key paths in a file that can be sourced to restore these variables into the shell environment - the fields of [export_secrets.tmpl.sh](https://github.com/iqtk/iqtk/blob/master/inquiry/tools/deploy/export_secrets.sh) can can be modified in this way.
 
-
-Storing this and other secret variables in a non-versioned shell script that can be sourced to restore these is a recommended step.
+Steps to create a service account key file are provided [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
 ##### *Important point*:
 It is very important to ensure that your service account credentials remain secure - both on the machines on which they are stores as well as preventing them from being committed to version control.
 
 ### Endpoint deployment
 
-An endpoint can be deployed (having defined the OAUTH_CLIENT_ID as above) on Google Endpoints using the following command:
+An endpoint can be deployed (having defined the OAUTH_CLIENT_ID variable) on Google Endpoints using the following command:
 
 ```bash
 sh scripts/deploy_api_endpoint.sh
@@ -37,21 +36,7 @@ Service Configuration [2017-08...] uploaded for service [....appspot.com]
 
 This will generate an endpoint service config name and ID in the form above but no need to write them down, these will be obtained by the following script.
 
-### API service deployment
-
-The API service can be deployed either on App Engine or Kubernetes. The latter is somewhat more complex.
-
-#### API deployment on GAE
-
-The API service can be deployed on App Engine with the following command (requiring confirmation):
-
-```bash
-sh scripts/deploy_api_gae.sh
-```
-
-Note that this step requires having deployed the API endpoint in the previous step so if you have issues here try repeating the previous step.
-
-#### API deployment on Kubernetes
+### API deployment on Kubernetes
 
 The API can be deployed on kubernetes with the following command:
 
@@ -59,12 +44,20 @@ The API can be deployed on kubernetes with the following command:
 sh scripts/deploy_api_kube.sh
 ```
 
-TODO: This doesn't currently work.
-
-### Testing API deployment
-
 Once deployed you can then test the API is functioning with the following command:
 
 ```bash
-iqtk-client-devel health
+API_SERVICE_IP=[???]
+API_PORT=[???]
+curl -H "content-type:application/json" http://${API_SERVICE_IP}:${API_PORT}/health
 ```
+
+### Run API tests
+
+In developing the API we'll want to be able to run tests. We can run those outside of the deployment container as follows:
+
+```bash
+bazel test //inquiry/services:api_test --test_output=errors
+```
+
+TODO: Explain developer workflow, probably elsewhere, whereby

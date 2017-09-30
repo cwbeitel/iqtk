@@ -32,6 +32,7 @@ spec:
         args: [
           "-p", "8081",
           "-a", "127.0.0.1:8080",
+          #"-a", "104.154.20.223", # Proxy to fission
           "-s", "SERVICE-NAME",
           "-v", "SERVICE-CONFIG-ID",
         ]
@@ -39,7 +40,7 @@ spec:
         ports:
         - containerPort: 8081
       - name: iqtk-api
-        image: quay.io/iqtk/iqtk:deploy-devel
+        image: quay.io/iqtk/iqtk:0.0.4
         imagePullPolicy: Always
         ports:
         - name: http-server

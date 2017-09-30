@@ -1,23 +1,20 @@
 
 #### Open
 
+- Port API to Fission/serverless
+
 - Establish an extensible framework for analytical workflows that positions for future
-
-  - Not satisfied with use of Apache Beam as core workflow framework. Porting to Fission / serverless, see [design](https://github.com/iqtk/iqtk/blob/master/inquiry/operations/README.md).
-
 
 #### Hold
 
 - Establish a paradigm for automated triggering of analysis
-
-  - More complicated than we thought and we don’t have the volume for this to be necessary right now. This should be pursued in the context of a broader, more cohesive vision for how devices, generally, interface with the infrastructure that takes signals from them and turns that into structured information.
-
 
 #### Un-started
 
 - Prototype novel analytical modules
   - Neural base caller
   - Molecular dynamics simulation
+  - Imaging
 
 #### Closed
 

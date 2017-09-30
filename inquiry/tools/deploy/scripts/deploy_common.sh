@@ -75,10 +75,11 @@ ensure_kube_cluster_exists() {
   if [ -z "${DEPLOYMENT}" ]; then
     echo 'Container engine deployment with name ${CLUSTER_NAME} not found, deploying...'
   	gcloud alpha container clusters create ${CLUSTER_NAME} \
+      --zone us-central1-f \
   		--scopes "cloud-platform" \
   		--num-nodes 4
   else
     echo 'A container engine deployment named ${CLUSTER_NAME} was found, using that.'
   fi
-  gcloud container clusters get-credentials ${CLUSTER_NAME}
+  gcloud container clusters get-credentials --zone us-central1-f ${CLUSTER_NAME}
 }

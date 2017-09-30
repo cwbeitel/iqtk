@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -11,43 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Testing of API service."""
 
-import unittest
-import json
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-from inquiry.services import api
-
-
-class APIServiceTest(unittest.TestCase):
-
-    def setUp(self):
-        api.app.testing = True
-        self.app = api.app.test_client()
-
-    def test_health(self):
-        rv = json.loads(self.app.get('/health').data)
-        assert 'hp' in rv and rv['hp'] is 100
-
-    def test_list(self):
-        # TODO
-        pass
-
-    def test_describe(self):
-        # TODO
-        pass
-
-    def test_delete(self):
-        # TODO
-        pass
-
-    def test_submit(self):
-        # TODO
-        pass
-
-    def tearDown(self):
-        pass
-
-
-if __name__ == "__main__":
-    unittest.main()
+export IQTK_DEPLOY_PROJECT_ID=[your gcloud project ID]
+export IQTK_API_KEY=[your gcloud API key]
+export IQTK_OAUTH_CLIENT_ID=[your gcloud OAUTH client ID]
+export IQTK_CLIENT_SECRETS_FILE=[local path to your gcloud OAUTH client secrets file]
+export LOCAL_SA_KEY_JSON=[local path to your gcloud service account key]

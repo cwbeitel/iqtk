@@ -1,6 +1,10 @@
 # operations
 
-![**Status: Prototype**](https://img.shields.io/badge/status-prototype-red.svg)
+### Random thoughts
+
+- Apache Beam wasn't built to be used in this way. Ultimately it's awkward to fit things into the Beam syntax and we should be able to work in a pure-functional manner.
+- There should be unity between the way we express our data analyses and the rest of the components of our infrastructure.
+-
 
 Refactor of Apache beam-centric architecture for Fission/lowercase-serverless. The key goals are to reduce dependency complexity, simplify debugging and development, and simplify and accelerate deployment among other things.
 

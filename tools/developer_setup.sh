@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # Copyright 2017 The Regents of the University of California
 #
 # Licensed under the BSD-3-clause license (the "License"); you may not
@@ -11,43 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Testing of API service."""
 
-import unittest
-import json
+# Install Bazel
+# TODO
 
-from inquiry.services import api
+# Install Conda
+# TODO
 
+# Install gcloud command line tool
+# TODO
 
-class APIServiceTest(unittest.TestCase):
+# Install kubectl
+# TODO
 
-    def setUp(self):
-        api.app.testing = True
-        self.app = api.app.test_client()
-
-    def test_health(self):
-        rv = json.loads(self.app.get('/health').data)
-        assert 'hp' in rv and rv['hp'] is 100
-
-    def test_list(self):
-        # TODO
-        pass
-
-    def test_describe(self):
-        # TODO
-        pass
-
-    def test_delete(self):
-        # TODO
-        pass
-
-    def test_submit(self):
-        # TODO
-        pass
-
-    def tearDown(self):
-        pass
-
-
-if __name__ == "__main__":
-    unittest.main()
+#

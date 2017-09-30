@@ -4,8 +4,8 @@ info:
   description: "An API for submitting, listing, describing, and deleting flow jobs."
   title: "Inquiry Workflow API"
   version: "0.0.1"
-#host: "iqtk-api.endpoints.YOUR-PROJECT-ID.cloud.goog"
-host: "YOUR-PROJECT-ID.appspot.com"
+host: "iqtk-api.endpoints.YOUR-PROJECT-ID.cloud.goog"
+#host: "YOUR-PROJECT-ID.appspot.com"
 # [END swagger]
 basePath: "/"
 consumes:

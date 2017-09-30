@@ -45,7 +45,7 @@ See [TODO.md](https://github.com/iqtk/iqtk/blob/master/inquiry/docs/TODO.md).
 
 ## Organizational strategies
 
-- There is space for everyone. It's irresponsible to exclude people who stand to benefit the project (and who can follow the code of conduct) for personal or political reasons.
+- There is space for everyone. It's irresponsible to exclude people who stand to benefit the project (and who can follow the [code of conduct](https://github.com/iqtk/iqtk/blob/master/CODE_OF_CONDUCT.md)) for personal or political reasons.
 - The curriculum of challenge problems is the root driver. Operate in ZPD to design current objectives and for those derive short-term key results of the correct form. Then within this context (which in turn in the context of a broader vision of related projects), use agile.
 
 ### Acknowledgements

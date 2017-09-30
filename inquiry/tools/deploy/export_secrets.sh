@@ -15,15 +15,8 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# jbei-cloud
-# export IQTK_API_KEY=AIzaSyCnvan1G9nDwa1dTRWYQ1EIKTW3tRVyXYI
-# export IQTK_OAUTH_CLIENT_ID="1066838427803-mj1p4rf5meot88lb0mq6hbehnqkd3ejt"
-# export IQTK_CLIENT_SECRETS_FILE=${SCRIPT_DIR}/configs/oauth2_client_secrets.jbei-cloud.json
-
-# ml-beam
-export IQTK_DEPLOY_PROJECT_ID=ml-beam
-export IQTK_API_KEY=AIzaSyBay9oww13cgJ83HMImWt7Y0vwd8ATHgVc
-export IQTK_OAUTH_CLIENT_ID=523455313934-u3odek2cve1g3m55g5s3v2pmas2kf5r5
-export IQTK_CLIENT_SECRETS_FILE=/Users/cb/Desktop/release/iqtk/inquiry/tools/deploy/configs/oauth2_client_secrets.ml-beam.json
-export LOCAL_SA_KEY_JSON=/Users/cb/Desktop/release/iqtk/inquiry/tools/deploy/configs/sa-key.json
-#export IQTK_SERVICE_ACCOUNT_PROJECT_ID=$(cat ${IQTK_SERVICE_ACCOUNT_KEY_FILE} | grep project_id | cut -f4 -d' ' | sed 's/"//g' | sed 's/,//g')
+export IQTK_DEPLOY_PROJECT_ID=iqtk-181117
+export IQTK_API_KEY=AIzaSyDD98tx0ajaa-lS26k23t6qRnH7QVGVsAo
+export IQTK_OAUTH_CLIENT_ID=978884987876-bh0us79ebh8sgpigofuf9geacst7sivk.apps.googleusercontent.com
+export IQTK_CLIENT_SECRETS_FILE=/Users/cb/creds/iqtk-181117-cs.json
+export LOCAL_SA_KEY_JSON=/Users/cb/creds/iqtk-7f8f1f036e47.json

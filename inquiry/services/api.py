@@ -146,6 +146,7 @@ def unexpected_error(e):
 def _port_from_env(default_port=8080):
     """Get the $PORT variable from the runtime environment or return 8080."""
     # TODO
+    port = default_port
     return port
 
 

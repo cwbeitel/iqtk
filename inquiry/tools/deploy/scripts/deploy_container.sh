@@ -18,7 +18,7 @@
 # requires image iqtk-base exists
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/builds_common.sh"
+source "${SCRIPT_DIR}/deploy_common.sh"
 
 if [ -z "${QUAY_IO_IQTK_UNAME}" ]; then
   die 'Quay.io username must be defined via. \$QUAY_IO_IQTK_UNAME.'

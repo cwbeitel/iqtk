@@ -15,6 +15,8 @@
 
 # e.g. sh inquiry/tools/ci_build/ci_build.sh inquiry/tools/ci_build/builds/pip.sh
 
+BASE_BUILD_TAG=iqtk-base
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Dockerfile to be used in docker build
@@ -53,6 +55,11 @@ echo "COMMAND: ${COMMAND[@]}"
 echo "BASE_BUILD_TAG: ${BASE_BUILD_TAG}"
 echo "  (docker container name will be ${DOCKER_IMG_NAME})"
 echo ""
+
+if [[ -z "${DOCKER_IMG_NAME}" ]]; then
+  echo "please define the tag to use for the build via DOCKER_IMG_NAME"
+  exit 1
+fi
 
 # Build the docker container.
 echo "Building container (${DOCKER_IMG_NAME})..."

@@ -5,4 +5,4 @@ BAZEL_FLAGS="--test_lang_filters=py \
 BAZEL_TEST_TARGETS="//inquiry/..."
 
 #Actually run the tests.
-bazel test ${BAZEL_FLAGS} -- ${BAZEL_TEST_TARGETS}
+#bazel test ${BAZEL_FLAGS} -- ${BAZEL_TEST_TARGETS}
