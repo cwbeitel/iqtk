@@ -1,0 +1,1 @@
+[{'file_type': 'bam', 'local_path': None, 'condition': None, 'remote_path': 'gs://inquiry-test/output/test-e2e-0-20170425194932/tophat-20170425194933/accepted_hits.bam'}]
